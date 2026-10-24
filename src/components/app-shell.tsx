@@ -23,7 +23,7 @@ function active(pathname: string, href: string) { return href === "/" ? pathname
 export function AppShell({ children }: { children: ReactNode }) {
   const { online } = usePwa(); const { money } = useMoney(); const pathname = usePathname();
   const { user, openPanel, panel, demo, settings, pricing, refreshAccount, notify, announcements } = useStore(); const { unread } = useInbox();
-  const admin = pathname === "/admin" || pathname.startsWith("/admin/"); const bare = admin || pathname === "/mail" || pathname === "/temp-numbers"; // /mail is a full-screen app-style page with its own bars const [servicesOpen, setServicesOpen] = useState(false);
+  const admin = pathname === "/admin" || pathname.startsWith("/admin/"); const bare = admin || pathname === "/mail" || pathname === "/temp-numbers"; const [servicesOpen, setServicesOpen] = useState(false); /* /mail and /temp-numbers are full-screen app-style pages with their own bars */
   useEffect(() => { setServicesOpen(false); }, [pathname]);
   return <>{!bare && <><header className="site-header"><div className="header-inner">
     <button className="icon-button menu-toggle" aria-label="Open navigation drawer" onClick={() => openPanel("menu")}><Menu size={23}/></button><Logo/>
