@@ -30,13 +30,14 @@ function parseFrom(v: unknown): { name: string; address: string } {
   if (v && typeof v === "object") { const x = o(v); return { name: s(x.name), address: s(x.address || x.email) }; }
   const text = s(v); const m = /^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/.exec(text); return m ? { name: m[1].trim(), address: m[2].trim() } : { name: "", address: text.trim() };
 }
-async function http(url: string, init: RequestInit = {}) {
+type HttpInit = Omit<RequestInit, "headers"> & { headers?: Record<string, string> };
+async function http(url: string, init: HttpInit = {}) {
   let res: Response;
   try { res = await fetch(url, { ...init, cache: "no-store", signal: AbortSignal.timeout(12_000), headers: { Accept: "application/json, application/ld+json;q=0.9, */*;q=0.1", ...init.headers } }); } catch { throw busy(); }
   const raw = await res.text(); let data: unknown = null; try { data = raw ? JSON.parse(raw) : null; } catch { /* non-JSON body */ }
   return { status: res.status, ok: res.ok, data };
 }
-const json = (body: unknown): RequestInit => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+const json = (body: unknown): HttpInit => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 const attachmentsOf = (list: unknown[]) => list.map(a => { const x = o(a); return { name: s(x.filename || x.name || x.file_name) || "attachment", size: Number(x.size_bytes ?? x.size ?? x.bytes) || null, type: s(x.mime_type || x.contentType || x.content_type || x.type) || "file" }; });
 
 // ── Mail V1 · GrabMail ─────────────────────────────────────────────────────────
