@@ -22,14 +22,14 @@ function frameDoc(html: string, images: boolean) {
 
 /** The green mail tile with a little ribbon, as on the Email screen. */
 function MailTile() {
-  return <svg className="tm-tile" viewBox="0 0 160 120" aria-hidden="true"><defs><linearGradient id="tmg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#25e39b"/><stop offset="1" stopColor="#08975a"/></linearGradient></defs>
-    <path d="M112 22h26a4 4 0 0 1 4 4v50l-17-12-17 12V26a4 4 0 0 1 4-4Z" fill="#8c8d91"/>
+  return <svg className="tm-tile" viewBox="0 0 160 120" aria-hidden="true"><defs><linearGradient id="tmg" x1="0" y1="0" x2="0" y2="1"><stop className="tm-g1" offset="0"/><stop className="tm-g2" offset="1"/></linearGradient></defs>
+    <path className="tm-ribbon" d="M112 22h26a4 4 0 0 1 4 4v50l-17-12-17 12V26a4 4 0 0 1 4-4Z"/>
     <rect x="18" y="14" width="96" height="96" rx="26" fill="url(#tmg)"/>
-    <rect x="34" y="42" width="64" height="44" rx="8" fill="#e9fff4"/><path d="M36 46l30 22 30-22" fill="none" stroke="#7fd9b0" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+    <rect className="tm-tile-paper" x="34" y="42" width="64" height="44" rx="8"/><path className="tm-tile-line" d="M36 46l30 22 30-22" fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 }
 /** Dark open envelope used for the empty inbox. */
 function EnvelopeArt() {
-  return <svg className="tm-envelope" viewBox="0 0 330 330" aria-hidden="true"><path d="M20 120 160 24a28 28 0 0 1 30 0l120 80a30 30 0 0 1 14 25v130a30 30 0 0 1-30 30H36a30 30 0 0 1-30-30V145a30 30 0 0 1 14-25Z" fill="#1a1a1c"/><path d="M6 150 150 252a20 20 0 0 0 30 0L324 150" fill="none" stroke="#2c2d30" strokeWidth="2"/></svg>;
+  return <svg className="tm-envelope" viewBox="0 0 330 330" aria-hidden="true"><path className="tm-env-flap" d="M20 120 160 24a28 28 0 0 1 30 0l120 80a30 30 0 0 1 14 25v130a30 30 0 0 1-30 30H36a30 30 0 0 1-30-30V145a30 30 0 0 1 14-25Z"/><path className="tm-env-line" d="M6 150 150 252a20 20 0 0 0 30 0L324 150" fill="none" strokeWidth="2"/></svg>;
 }
 
 export function TempMailPage() {
@@ -113,7 +113,7 @@ export function TempMailPage() {
 
   // ── Email ──
   const emailScreen = <div className="tm-pad">{error && <p className="tm-error" role="alert">{error}</p>}
-    <div className="tm-card-wrap"><div className="tm-card"><svg className="tm-flap" viewBox="0 0 330 160" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="tmf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3a3b3e"/><stop offset="1" stopColor="#2c2d2f"/></linearGradient></defs><path d="M0 28 150 136a22 22 0 0 0 30 0L330 28V0H0Z" fill="url(#tmf)" stroke="#4a4b4f" strokeWidth="1"/></svg>
+    <div className="tm-card-wrap"><div className="tm-card"><svg className="tm-flap" viewBox="0 0 330 160" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="tmf" x1="0" y1="0" x2="0" y2="1"><stop className="tm-f1" offset="0"/><stop className="tm-f2" offset="1"/></linearGradient></defs><path className="tm-flap-path" d="M0 28 150 136a22 22 0 0 0 30 0L330 28V0H0Z" fill="url(#tmf)" strokeWidth="1"/></svg>
       <button className="tm-kebab" aria-label="More options" onClick={() => setSheet("actions")}><EllipsisVertical size={20}/></button><MailTile/>
       {active ? <><p className="tm-address">{active.address}</p><p className="tm-sub">Your Temporary Email Address</p><p className="tm-meta">{active.label} · {left(active.expiresAt)}</p><button className="tm-green" onClick={() => doCopy(active.address, "addr")}>{copied === "addr" ? <><Check size={20}/>Copied</> : <><Copy size={20}/>Copy email</>}</button></> :
         <><p className="tm-address tm-none">No email yet</p><p className="tm-sub">Create a temporary address in one tap</p><p className="tm-meta">&nbsp;</p><button className="tm-green" disabled={!canCreate} onClick={openCreate}><Plus size={20}/>Create email</button></>}</div></div>
