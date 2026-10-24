@@ -29,6 +29,7 @@ export async function POST(request:Request){try{
   const netUsd=product.price-(coupon?.discount||0);const amount=fromUsd(netUsd,fx);
   if((user.currency!=="USD"&&(data.expectedAmount==null||data.expectedCurrency!==user.currency))||(data.expectedAmount!=null&&data.expectedAmount!==amount)||(data.expectedCurrency&&data.expectedCurrency!==user.currency))throw new AppError("The local price or exchange rate has changed. Refresh and review the total in your account currency.",409);
   if(product.stock<=0)throw new AppError("This product is currently out of stock.",409);if(wallet.balance<amount)throw new AppError("Your wallet needs a little top-up before this purchase.",402);
+  const giftMessage=data.gift?.message??"";
   let recipient:{id:string;name:string}|null=null;
   if(data.gift){
    if(data.gift.email===user.email.toLowerCase())throw new AppError("That’s your own email. Buy it normally to keep it for yourself.");
@@ -49,10 +50,10 @@ export async function POST(request:Request){try{
   }
   // Gift: the buyer pays and keeps a receipt; the recipient gets their own zero-amount order that carries the delivery.
   const [recipientWallet]=await tx.select({currency:users.currency}).from(users).where(eq(users.id,recipient.id));
-  const [received]=await tx.insert(orders).values({userId:recipient.id,productId:product.id,kind:"product",title:product.name,amount:0,currency:recipientWallet?.currency||"USD",baseAmount:0,status:delivery?"completed":"processing",idempotencyKey:`${key}:gift`,metadata:{...common,fulfillment:delivery||null,gift:{from:user.id,fromName:maskedName(user.name),message:data.gift.message}}}).returning();
-  const [order]=await tx.insert(orders).values({userId:user.id,productId:product.id,kind:"product",title:`Gift: ${product.name}`,amount,currency:user.currency,baseAmount:netUsd,status:"completed",idempotencyKey:key,metadata:{...common,fulfillment:null,...couponMeta,fx,gift:{to:recipient.id,toName:maskedName(recipient.name),message:data.gift.message,recipientOrderId:received.id}}}).returning();
+  const [received]=await tx.insert(orders).values({userId:recipient.id,productId:product.id,kind:"product",title:product.name,amount:0,currency:recipientWallet?.currency||"USD",baseAmount:0,status:delivery?"completed":"processing",idempotencyKey:`${key}:gift`,metadata:{...common,fulfillment:delivery||null,gift:{from:user.id,fromName:maskedName(user.name),message:giftMessage}}}).returning();
+  const [order]=await tx.insert(orders).values({userId:user.id,productId:product.id,kind:"product",title:`Gift: ${product.name}`,amount,currency:user.currency,baseAmount:netUsd,status:"completed",idempotencyKey:key,metadata:{...common,fulfillment:null,...couponMeta,fx,gift:{to:recipient.id,toName:maskedName(recipient.name),message:giftMessage,recipientOrderId:received.id}}}).returning();
   if(inventoryId)await tx.update(inventoryItems).set({orderId:received.id}).where(eq(inventoryItems.id,inventoryId));
-  await tx.insert(gifts).values({senderId:user.id,recipientId:recipient.id,senderOrderId:order.id,recipientOrderId:received.id,productId:product.id,message:data.gift.message});
+  await tx.insert(gifts).values({senderId:user.id,recipientId:recipient.id,senderOrderId:order.id,recipientOrderId:received.id,productId:product.id,message:giftMessage});
   if(coupon)await recordRedemption(tx,coupon.coupon.id,user.id,order.id,coupon.discount);
   return {order,giftTo:recipient.id,receivedId:received.id,productName:product.name};
  });
