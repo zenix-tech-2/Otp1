@@ -1,4 +1,5 @@
 "use client";
+import { peekPurchase, seedPurchase } from "@/lib/purchase-seed";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -22,7 +23,7 @@ export function NumbersPage() {
   useEffect(() => { if (!serviceId || activationId) return; let cancelled = false; setCountriesLoading(true); api<{countries:Country[]}>(`/api/sms/catalog?service=${encodeURIComponent(serviceId)}`).then(r => { if (!cancelled) setCountries(r.countries); }).catch(e => { if (!cancelled) setError(e.message); }).finally(() => { if (!cancelled) setCountriesLoading(false); }); return () => { cancelled = true; }; }, [serviceId,activationId]);
   useEffect(() => { if (tab !== "active" || !user) return; setHistoryLoading(true); api<{activations:Activation[]}>("/api/sms/activations").then(r => setHistory(r.activations)).catch(e => setError(e.message)).finally(() => setHistoryLoading(false)); }, [tab,user]);
   useEffect(() => {
-    if (!activationId || !user) return; let cancelled = false; let timer: ReturnType<typeof setTimeout>; setActivationLoading(true); setAct(null);
+    if (!activationId || !user) return; let cancelled = false; let timer: ReturnType<typeof setTimeout>; const seeded = peekPurchase<Activation>("activation", activationId); if (seeded) { setAct(cur => cur?.id === seeded.id ? cur : seeded); setActivationLoading(false); } else { setActivationLoading(true); setAct(null); }
     async function poll() { try { const result = await api<{activation:Activation}>(`/api/sms/activations/${activationId}`); if (cancelled) return; setAct(result.activation); setError(""); if (["waiting","provisioning"].includes(result.activation.status)) timer = setTimeout(poll,5000); else refreshAccount().catch(() => {}); } catch(e) { if (!cancelled) { setError((e as Error).message); timer = setTimeout(poll,10000); } } finally { if (!cancelled) setActivationLoading(false); } }
     poll(); return () => { cancelled = true; clearTimeout(timer); };
   }, [activationId,user?.id,refreshAccount]);
@@ -31,7 +32,7 @@ export function NumbersPage() {
   const filteredCountries = useMemo(() => countries.filter(c => c.name.toLowerCase().includes(search.toLowerCase())).sort((a,b) => countrySort === "price" ? (a.count ? a.price : Infinity)-(b.count ? b.price : Infinity) : b.count-a.count), [countries,search,countrySort]);
   async function buy() {
     if (!service || !country) return; if (!user) { openPanel("login"); return; } setBusy(true); setError("");
-    try { const result = await api<{activation:Activation;warning?:string}>("/api/sms/activations", { method:"POST",body:JSON.stringify({service:service.code,country:country.id,countryName:country.name,expectedPrice:country.price,expectedAmount:localPrice(country.price)??undefined,expectedCurrency:currency,idempotencyKey:requestKey.current}) }); await refreshAccount(); if (result.warning) notify(result.warning,"error"); router.push(`/numbers?activation=${result.activation.id}`); } catch(e) { setError((e as Error).message); } finally { setBusy(false); }
+    try { const result = await api<{activation:Activation;warning?:string}>("/api/sms/activations", { method:"POST",body:JSON.stringify({service:service.code,country:country.id,countryName:country.name,expectedPrice:country.price,expectedAmount:localPrice(country.price)??undefined,expectedCurrency:currency,idempotencyKey:requestKey.current}) }); seedPurchase("activation", result.activation); refreshAccount().catch(() => {}); if (result.warning) notify(result.warning,"error"); router.push(`/numbers?activation=${result.activation.id}`); } catch(e) { setError((e as Error).message); } finally { setBusy(false); }
   }
   async function copy(value:string,label:string) { try { await navigator.clipboard.writeText(value); notify(`${label} copied. You’re ready to go.`); } catch { notify("Copy isn’t available in this browser. Select and copy the text instead.","error"); } }
   async function check() { if (!activationId) return; setChecking(true); setError(""); try { const r = await api<{activation:Activation}>(`/api/sms/activations/${activationId}?wait=1`); setAct(r.activation); await refreshAccount(); if (r.activation.status === "waiting") notify("No message just yet. We’re still listening."); } catch(e) { setError((e as Error).message); } finally { setChecking(false); } }

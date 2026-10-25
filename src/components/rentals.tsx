@@ -1,4 +1,5 @@
 "use client";
+import { peekPurchase, seedPurchase } from "@/lib/purchase-seed";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -48,7 +49,7 @@ export function RentalsFlow() {
     if (!service || !country || !option) return; if (!user) { openPanel("login"); return; } setBusy(true); setError("");
     try {
       const result = await api<{ rental: Rental; warning?: string }>("/api/sms/rentals", { method: "POST", body: JSON.stringify({ service: service.code, country: country.id, countryName: country.name, hours: option.hours, expectedPrice: option.price, expectedAmount: localPrice(option.price) ?? undefined, expectedCurrency: currency, idempotencyKey: requestKey.current }) });
-      await refreshAccount(); if (result.warning) notify(result.warning, "error"); router.push(`/numbers?tab=rentals&rental=${result.rental.id}`);
+      seedPurchase("rental", result.rental); refreshAccount().catch(() => {}); if (result.warning) notify(result.warning, "error"); router.push(`/numbers?tab=rentals&rental=${result.rental.id}`);
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
 
@@ -86,10 +87,10 @@ export function RentalsFlow() {
 
 function RentalDetail({ id }: { id: string }) {
   const { money } = useMoney(); const { user, accountLoading, openPanel, refreshAccount, notify } = useStore(); const router = useRouter();
-  const [rental, setRental] = useState<Rental | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [tick, setTick] = useState(Date.now()); const [checking, setChecking] = useState(false); const [busy, setBusy] = useState(false);
+  const [rental, setRental] = useState<Rental | null>(() => peekPurchase<Rental>("rental", id)); const [loading, setLoading] = useState(() => !peekPurchase<Rental>("rental", id)); const [error, setError] = useState(""); const [tick, setTick] = useState(Date.now()); const [checking, setChecking] = useState(false); const [busy, setBusy] = useState(false);
   const refresh = useCallback(async () => { const r = await api<{ rental: Rental }>(`/api/sms/rentals/${id}`); setRental(r.rental); setError(""); return r.rental; }, [id]);
   useEffect(() => {
-    if (!user) return; let cancelled = false; let timer: ReturnType<typeof setTimeout>; setLoading(true);
+    if (!user) return; let cancelled = false; let timer: ReturnType<typeof setTimeout>; const seeded = peekPurchase<Rental>("rental", id); if (seeded) { setRental(cur => cur?.id === seeded.id ? cur : seeded); setLoading(false); } else setLoading(true);
     async function poll() { try { const r = await refresh(); if (cancelled) return; if (r.status === "active") timer = setTimeout(poll, 8000); else refreshAccount().catch(() => {}); } catch (e) { if (!cancelled) { setError((e as Error).message); timer = setTimeout(poll, 15000); } } finally { if (!cancelled) setLoading(false); } }
     poll(); return () => { cancelled = true; clearTimeout(timer); };
   }, [id, user?.id, refresh, refreshAccount]);
