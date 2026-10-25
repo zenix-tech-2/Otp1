@@ -28,6 +28,43 @@ export async function providerRequest(path: string, options: { method?: string; 
   return data;
 }
 /**
+ * Reads a purchase reply whatever shape the provider used: snake_case or camelCase, flat or nested (data / activation / result),
+ * a number given as text or inside a small object, or a single-item list. The shallowest match wins.
+ */
+export function readProvisioned(raw: unknown): { id: string; phone: string; expires: string } {
+  const skip = /^(service|country|pool|price|prices|cost|user|account|balance|meta|pricing)$/i;
+  const find = (match: RegExp, accept: (text: string) => boolean): string => {
+    let level: unknown[] = [raw];
+    for (let depth = 0; depth < 5 && level.length; depth++) {
+      const next: unknown[] = [];
+      for (const node of level) {
+        if (Array.isArray(node)) { next.push(...node.slice(0, 5)); continue; }
+        if (!node || typeof node !== "object") continue;
+        for (const [key, value] of Object.entries(node as Json)) {
+          if ((typeof value === "string" || typeof value === "number") && match.test(key)) { const text = String(value).trim(); if (text && accept(text)) return text; }
+          else if (value && typeof value === "object" && !skip.test(key)) next.push(value);
+        }
+      }
+      level = next;
+    }
+    return "";
+  };
+  const digits = (text: string) => text.replace(/\D/g, "").length;
+  return {
+    id: find(/^(id|activation_?id|rental_?id|order_?id|uuid)$/i, text => text.length <= 120),
+    phone: find(/^(phone_?number|phone|number|msisdn|full_?number|e164)$/i, text => digits(text) >= 6 && digits(text) <= 16),
+    expires: find(/^(expires_?at|expire_?at|expiry|expires|expiration)$/i, text => !Number.isNaN(new Date(text).getTime())),
+  };
+}
+/** When a purchase reply has an id but no number yet, ask the provider for the number a few times. */
+export async function lookupProvisionedPhone(path: string): Promise<{ phone: string; expires: string }> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try { const got = readProvisioned(await providerRequest(path, { timeoutMs: 8000 })); if (got.phone) return { phone: got.phone, expires: got.expires }; } catch { /* try again */ }
+    await new Promise(resolve => setTimeout(resolve, 800));
+  }
+  return { phone: "", expires: "" };
+}
+/**
  * Places an order with the provider. NumberOTP documents 5xx errors as safe to retry and refunds unused numbers
  * automatically, so network errors, timeouts and 5xx answers are retried a couple of times before giving up.
  * Definite answers (out of stock, price cap, balance) are never retried.
