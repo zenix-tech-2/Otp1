@@ -6,8 +6,9 @@ export type Country = { id: string; name: string; iso: string; cost: number; cou
 export type Json = Record<string, unknown>;
 export function record(value: unknown): Json { return value && typeof value === "object" && !Array.isArray(value) ? value as Json : {}; }
 export function unwrap(value: unknown): unknown { const r = record(value); return r.data ?? value; }
-export class ProviderError extends AppError { constructor(message: string, status: number, public uncertain = false) { super(message, status); } }
-export async function providerRequest(path: string, options: { method?: string; body?: unknown; auth?: "account" | "public" | "subuser"; wait?: boolean; cache?: boolean; idempotencyKey?: string } = {}): Promise<unknown> {
+/** `uncertain`: we can't tell whether the provider created something. `retryable`: a network, timeout or 5xx failure that the provider documents as safe to retry. */
+export class ProviderError extends AppError { constructor(message: string, status: number, public uncertain = false, public retryable = false) { super(message, status); } }
+export async function providerRequest(path: string, options: { method?: string; body?: unknown; auth?: "account" | "public" | "subuser"; wait?: boolean; cache?: boolean; idempotencyKey?: string; timeoutMs?: number } = {}): Promise<unknown> {
   if (IS_DEMO) throw new AppError("Live NumberOTP requests are disabled in the sandbox. Set APP_MODE=live and configure your server credentials to connect.", 503);
   const base = (process.env.NUMBEROTP_BASE_URL || "https://api.numberotp.com/v1").replace(/\/$/, "");
   const auth = options.auth || "account";
@@ -15,16 +16,31 @@ export async function providerRequest(path: string, options: { method?: string; 
   if (auth !== "public" && !key) throw new AppError("The SMS provider is not connected yet. Please contact store support.", 503);
   let response: Response;
   try {
-    response = await fetch(`${base}${path}`, { method: options.method || "GET", headers: { Accept: "application/json", ...(options.body ? { "Content-Type": "application/json" } : {}), ...(auth !== "public" ? { Authorization: `Bearer ${key}` } : {}), ...(options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : {}) }, body: options.body ? JSON.stringify(options.body) : undefined, signal: AbortSignal.timeout(options.wait ? 58000 : 20000), ...(options.cache ? { next: { revalidate: 300 } } : { cache: "no-store" as const }) });
-  } catch { throw new ProviderError("The provider could not be reached. If a number was being reserved, its status will be reconciled before funds are released.", 502, true); }
+    response = await fetch(`${base}${path}`, { method: options.method || "GET", headers: { Accept: "application/json", ...(options.body ? { "Content-Type": "application/json" } : {}), ...(auth !== "public" ? { Authorization: `Bearer ${key}` } : {}), ...(options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : {}) }, body: options.body ? JSON.stringify(options.body) : undefined, signal: AbortSignal.timeout(options.timeoutMs ?? (options.wait ? 58000 : 20000)), ...(options.cache ? { next: { revalidate: 300 } } : { cache: "no-store" as const }) });
+  } catch { throw new ProviderError("The provider could not be reached. If a number was being reserved, its status will be reconciled before funds are released.", 502, true, true); }
   let data: unknown;
-  try { data = await response.json(); } catch { throw new ProviderError("The provider returned an unexpected response.", 502, true); }
+  try { data = await response.json(); } catch { throw new ProviderError("The provider returned an unexpected response.", 502, true, true); }
   const result = record(data);
   if (!response.ok || result.success === false) {
     const message = typeof result.error === "string" ? result.error.slice(0, 300) : "The provider could not complete this request. Please try again.";
-    throw new ProviderError(message, response.status === 429 ? 429 : response.status >= 500 ? 502 : 400, response.status >= 500);
+    throw new ProviderError(message, response.status === 429 ? 429 : response.status >= 500 ? 502 : 400, response.status >= 500, response.status >= 500);
   }
   return data;
+}
+/**
+ * Places an order with the provider. NumberOTP documents 5xx errors as safe to retry and refunds unused numbers
+ * automatically, so network errors, timeouts and 5xx answers are retried a couple of times before giving up.
+ * Definite answers (out of stock, price cap, balance) are never retried.
+ */
+export async function providerOrder(path: string, body: unknown, idempotencyKey: string): Promise<unknown> {
+  const pauses = [600, 1500];
+  for (let attempt = 0; ; attempt++) {
+    try { return await providerRequest(path, { method: "POST", body, idempotencyKey, timeoutMs: 12000 }); }
+    catch (error) {
+      if (!(error instanceof ProviderError && error.retryable) || attempt >= pauses.length) throw error;
+      await new Promise(resolve => setTimeout(resolve, pauses[attempt]));
+    }
+  }
 }
 export async function listServices(country?: string): Promise<Service[]> {
   if (IS_DEMO) return demoServices;

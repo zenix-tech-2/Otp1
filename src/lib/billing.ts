@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { activations, orders, rentals, smmOrders, users } from "@/db/schema";
 import { releaseRedemption } from "./coupons";
 import { notifyUser } from "./notify";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
 import { AppError } from "./server";
 import { record, unwrap } from "./numberotp";
 export async function refundOrder(id: string, reason: string, allowCompleted = false) {
@@ -84,4 +84,18 @@ export async function applyRentalUpdate(id: string, payload: unknown) {
     const [updated] = await tx.update(rentals).set({ status: ended ? "expired" : "active", expiresAt, messages: messages.length >= rental.messages.length ? messages : rental.messages, lastPolledAt: new Date() }).where(eq(rentals.id, id)).returning();
     return updated;
   });
+}
+
+/**
+ * Clears numbers that were paid for but never linked to a provider number (status "reconciliation" with no provider id).
+ * After 15 minutes the buyer could not use such a number anyway, and NumberOTP refunds unused numbers automatically,
+ * so the buyer is refunded instead of waiting for manual help. Safe to run often: refunds only happen once.
+ */
+export async function healStuckNumbers(userId?: string) {
+  const cutoff = new Date(Date.now() - 15 * 60_000); let healed = 0;
+  const stuckActivations = await db.select().from(activations).where(and(eq(activations.status, "reconciliation"), or(isNull(activations.providerId), eq(activations.providerId, "")), lt(activations.createdAt, cutoff), ...(userId ? [eq(activations.userId, userId)] : []))).limit(25);
+  for (const row of stuckActivations) { try { await refundOrder(row.orderId, "The number was never linked to the provider and could not be used"); healed++; } catch { /* leave it for manual reconciliation */ } }
+  const stuckRentals = await db.select().from(rentals).where(and(eq(rentals.status, "reconciliation"), or(isNull(rentals.providerId), eq(rentals.providerId, "")), lt(rentals.createdAt, cutoff), ...(userId ? [eq(rentals.userId, userId)] : []))).limit(25);
+  for (const row of stuckRentals) { try { await refundOrder(row.orderId, "The rental was never linked to the provider and could not be used"); healed++; } catch { /* leave it for manual reconciliation */ } }
+  return healed;
 }
