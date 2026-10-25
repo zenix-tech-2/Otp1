@@ -5,7 +5,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { apiError, AppError, audit, getSettings, IS_DEMO, limit, sameOrigin } from "@/lib/server";
-import { getQuote, listServices, providerOrder, ProviderError, record, unwrap } from "@/lib/numberotp";
+import { getQuote, listServices, lookupProvisionedPhone, providerOrder, ProviderError, readProvisioned } from "@/lib/numberotp";
 import { healStuckNumbers, refundOrder } from "@/lib/billing";
 import { getCurrencyQuote } from "@/lib/fx";
 import { fromUsd } from "@/lib/currency";
@@ -42,15 +42,21 @@ export async function POST(request: Request) {
       return { activation, order, created: true };
     });
     if (!reservation.created) return Response.json(giftReply(reservation.order, reservation.activation));
-    const act = reservation.activation;
+    const act = reservation.activation; let knownProviderId = "";
     try {
       let providerId: string; let phone: string; let expiresAt = act.expiresAt;
       if (IS_DEMO) { providerId = `demo_${act.id}`; phone = `+1 202 555 01${String(Math.floor(Math.random() * 100)).padStart(2, "0")}`; }
       else {
-        const result = record(unwrap(await providerOrder("/activations", { service: data.service, country: data.country, pool: "auto", max_price: quote.cost / 100 }, act.id)));
-        providerId = String(result.id ?? result.activation_id ?? ""); phone = String(result.phone_number ?? result.phone ?? result.number ?? "");
-        if (!providerId || !phone) throw new ProviderError("The provider response needs manual reconciliation. Your reservation is saved; please do not buy again.", 502, true);
-        const expiry = new Date(String(result.expires_at ?? result.expiresAt ?? "")); if (Number.isFinite(expiry.getTime())) expiresAt = expiry;
+        const raw = await providerOrder("/activations", { service: data.service, country: data.country, pool: "auto", max_price: quote.cost / 100 }, act.id);
+        const got = readProvisioned(raw); providerId = got.id; phone = got.phone; let expires = got.expires; knownProviderId = got.id;
+        if (providerId && !phone) { const found = await lookupProvisionedPhone(`/activations/${encodeURIComponent(providerId)}`); phone = found.phone; expires = expires || found.expires; }
+        if (!providerId || !phone) {
+          // Keep a record of exactly what the provider sent, so the cause can be seen instead of guessed.
+          await audit(user.id, "sms.unreadable_reply", act.id, { reply: JSON.stringify(raw).slice(0, 600) }).catch(() => {});
+          // The provider answered, but not in a way we can use. Refund the buyer now; unused numbers are refunded to us by the provider.
+          throw new ProviderError("Unreadable provider reply", 502, false, true);
+        }
+        const expiry = new Date(expires); if (Number.isFinite(expiry.getTime())) expiresAt = expiry;
       }
       const [activation] = await db.update(activations).set({ providerId, phone, expiresAt, status: "waiting" }).where(eq(activations.id, act.id)).returning();
       // Bookkeeping runs after the response is sent, so the buyer isn't kept waiting for it.
@@ -61,14 +67,14 @@ export async function POST(request: Request) {
       return Response.json(giftReply(reservation.order, activation));
     } catch(error) {
       if (error instanceof ProviderError && error.uncertain && !error.retryable) {
-        const [activation] = await db.update(activations).set({ status: "reconciliation" }).where(eq(activations.id, act.id)).returning();
+        const [activation] = await db.update(activations).set({ status: "reconciliation", ...(knownProviderId ? { providerId: knownProviderId } : {}) }).where(eq(activations.id, act.id)).returning();
         await db.update(orders).set({ status: "reconciliation" }).where(eq(orders.id, act.orderId));
         return Response.json({ ...giftReply(reservation.order, activation), warning: error.message });
       }
       await refundOrder(act.orderId, "Number could not be provisioned");
       await db.update(activations).set({ status: "cancelled" }).where(eq(activations.id, act.id));
       // The provider never answered after several tries and refunds unused numbers by itself, so the buyer is refunded right away.
-      if (error instanceof ProviderError && error.retryable) throw new AppError("The number provider didn’t respond, so you haven’t been charged. Please try again in a moment.", 502);
+      if (error instanceof ProviderError && error.retryable) throw new AppError("We couldn’t get a number from the provider this time, so you haven’t been charged. Please try again in a moment.", 502);
       throw error;
     }
   } catch(e) { return apiError(e); }
