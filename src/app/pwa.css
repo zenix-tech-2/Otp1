@@ -1,0 +1,10 @@
+/* PWA extras: new pages and window-controls-overlay support */
+.pwa-page{max-width:760px;margin:0 auto;padding-bottom:60px}.pwa-page h1{font-size:34px;letter-spacing:-1.2px;margin:6px 0}.pwa-sub{color:var(--muted);margin:0 0 20px}
+.pwa-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin:0 0 14px;box-shadow:var(--shadow)}.pwa-card h2{margin:0;font-size:17px}.pwa-card small{color:var(--muted)}.pwa-card p{margin:0 0 6px;white-space:pre-wrap;word-break:break-word}
+.pwa-card textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;resize:vertical;margin-bottom:12px;background:var(--canvas)}.pwa-error{color:#d33a4f}
+.pwa-lines{list-style:none;margin:12px 0 0;padding:0}.pwa-lines li{display:flex;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}.pwa-lines span{flex:1;word-break:break-word}.pwa-lines a{color:var(--blue);font-weight:700;font-size:12px}
+@media (display-mode: window-controls-overlay){
+ .site-header{-webkit-app-region:drag;app-region:drag}
+ .site-header a,.site-header button,.site-header input,.site-header nav{-webkit-app-region:no-drag;app-region:no-drag}
+ .header-inner{padding-right:max(22px,calc(100vw - env(titlebar-area-x,0px) - env(titlebar-area-width,100vw) + 14px))}
+}

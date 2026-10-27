@@ -1,0 +1,51 @@
+/* Admin pop-ups (shown after sign-in) and the Send a gift page. */
+.popup-scrim{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;background:#0b122099;backdrop-filter:blur(2px);animation:popup-fade .18s ease-out}
+.popup-card{position:relative;width:100%;max-width:420px;max-height:calc(100dvh - 40px);overflow:auto;background:#fff;color:var(--navy);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 60px #0b12204d;display:grid;animation:popup-rise .22s ease-out}
+.popup-image{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:18px 18px 0 0}
+.popup-content{padding:22px 22px 6px;display:grid;gap:10px}
+.popup-content h2{margin:0;text-align:center;font-size:21px;line-height:1.25;color:var(--navy)}
+.popup-content p{margin:0;font-size:15px;line-height:1.55;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.popup-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;padding:14px 22px 22px}
+.popup-cta,.popup-close{border:0;border-radius:12px;padding:11px 20px;font:inherit;font-weight:600;font-size:15px;cursor:pointer;background:var(--blue);color:#fff}
+.popup-cta:hover,.popup-close:hover{background:var(--blue-dark)}
+.popup-close-quiet{background:#eef2fa;color:var(--navy)}
+.popup-close-quiet:hover{background:#e2e9f6}
+.popup-x{position:absolute;top:10px;right:10px;z-index:1;width:32px;height:32px;border-radius:50%;border:0;display:grid;place-items:center;background:#0b122080;color:#fff;cursor:pointer}
+.popup-card-preview{max-width:100%;box-shadow:none;animation:none;pointer-events:none}
+.popup-card-preview .popup-image{max-height:160px}
+.popup-preview-wrap{background:#f1f4fa;border-radius:14px;padding:16px;display:grid;justify-items:center}
+.popup-image-field{display:grid;gap:8px;font-size:13px}
+.popup-image-chosen{display:flex;align-items:center;gap:12px}
+.popup-image-chosen img{width:96px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+@keyframes popup-fade{from{opacity:0}to{opacity:1}}
+@keyframes popup-rise{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.popup-scrim,.popup-card{animation:none}}
+.gift-step{display:grid;gap:12px;padding:18px;border:1px solid var(--line);border-radius:16px;background:#fff;margin-bottom:14px}
+.gift-step h3{display:flex;align-items:center;gap:10px;margin:0;font-size:16px}
+.gift-step h3 span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#fdeefb;color:#c23ab0;font-size:12px}
+.gift-search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.gift-search input{border:0!important;background:transparent!important;flex:1;min-width:0;outline:none}
+.gift-products{display:grid;gap:8px;max-height:340px;overflow:auto;padding:2px}
+.gift-product{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;color:inherit;font:inherit;cursor:pointer}
+.gift-product>span{flex:1;min-width:0;display:grid}
+.gift-product small{color:var(--muted)}
+.gift-product.selected{border-color:var(--blue);box-shadow:0 0 0 2px #1754f533}
+html[data-theme="dark"] .popup-card,html[data-theme="dark"] .gift-step,html[data-theme="dark"] .gift-product{background:#121a2b;border-color:#243049;color:#e7edfb}
+html[data-theme="dark"] .popup-content h2{color:#e7edfb}
+html[data-theme="dark"] .popup-close-quiet{background:#1b2742;color:#e7edfb}
+html[data-theme="dark"] .popup-preview-wrap{background:#0f1829}
+html[data-theme="dark"] .gift-step h3 span{background:#240e21;color:#d46fc7}
+.gift-seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border-radius:14px;background:#eef2fa;margin-bottom:14px}
+.gift-seg button{display:flex;align-items:center;justify-content:center;gap:8px;height:42px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-weight:600;cursor:pointer}
+.gift-seg button.on{background:#fff;color:var(--navy);box-shadow:0 1px 6px #1f33600f}
+.gift-seg-sm{margin-bottom:0}.gift-seg-sm button{height:36px;font-size:13px}
+.gift-numbers{display:grid;gap:12px}
+.gift-back{justify-self:start;display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--blue);font:inherit;font-weight:600;cursor:pointer;padding:0}
+.gift-picked{display:flex;align-items:center;gap:10px}
+.gift-flag{font-size:26px;width:36px;text-align:center;flex:none}
+.gift-product:disabled{opacity:.5;cursor:not-allowed}
+.gift-durations{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.gift-durations button{display:grid;gap:2px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff;color:inherit;font:inherit;cursor:pointer}
+.gift-durations small{color:var(--muted)}.gift-durations .on{border-color:var(--blue);box-shadow:0 0 0 2px #1754f533}
+html[data-theme="dark"] .gift-seg{background:#0f1829}html[data-theme="dark"] .gift-seg button.on{background:#1b2742;color:#e7edfb}
+html[data-theme="dark"] .gift-durations button{background:#121a2b;border-color:#243049;color:#e7edfb}
