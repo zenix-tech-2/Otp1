@@ -15,7 +15,8 @@ import { addMessage, adminDeliver, adminNote, adminQuote, adminStatus, deleteDev
 import {validateDeliveryReference,readyUpload} from "@/lib/uploads";
 import { validateCourseDelivery, validateCountry, validateLinkDelivery, validateSlots } from "@/lib/delivery-server";
 import { MAX_FULFILLMENT } from "@/lib/delivery";
-import { notifyUser } from "@/lib/notify";
+import { after } from "next/server";
+import { notifyAll, notifyUser } from "@/lib/notify";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
@@ -111,9 +112,10 @@ export async function POST(request: Request) {
       const [act] = await db.select().from(activations).where(eq(activations.id, data.id)); if (!act || act.status !== "reconciliation") throw new AppError("This activation does not need reconciliation.");
       await db.update(activations).set({ providerId: data.providerId, phone: data.phone, status: "waiting" }).where(eq(activations.id, data.id)); await db.update(orders).set({ status: "processing" }).where(eq(orders.id, act.orderId));
     } else if (action === "publish-news" || action === "save-news") {
-      const news = await saveNews(action === "save-news" ? input.post : input); target = news.id; result = { announcement: news };
+      const isNew = action === "publish-news" ? !input.id : !input.post?.id; const news = await saveNews(action === "save-news" ? input.post : input); target = news.id; result = { announcement: news };
+      if (news.active && isNew) after(() => notifyAll({ kind: "news", title: news.title, body: news.excerpt || news.body.slice(0, 160), url: `/${news.kind === "news" ? "news" : "updates"}/${news.slug}`, tag: `news-${news.id}` }));
     } else if (action === "archive-news") { target = z.string().uuid().parse(input.id); await db.update(announcements).set({ active: false }).where(eq(announcements.id, target));
-    } else if (action === "reply-ticket") { const data = z.object({ id: z.string().uuid(), reply: z.string().trim().min(5).max(4000), status: z.enum(["open", "resolved"]) }).parse(input); target = data.id; await db.update(tickets).set({ reply: data.reply, status: data.status }).where(eq(tickets.id, data.id));
+    } else if (action === "reply-ticket") { const data = z.object({ id: z.string().uuid(), reply: z.string().trim().min(5).max(4000), status: z.enum(["open", "resolved"]) }).parse(input); target = data.id; const [replied] = await db.update(tickets).set({ reply: data.reply, status: data.status }).where(eq(tickets.id, data.id)).returning(); if (replied) after(() => notifyUser(replied.userId, { kind: "support", title: "Support replied", body: data.reply.slice(0, 140), url: "/support" }));
     } else if (action === "save-dev-project") { const project = await saveDevProject(input.project); target = project.id; result = { project };
     } else if (action === "delete-dev-project") { target = z.string().uuid().parse(input.id); await deleteDevProject(target);
     } else if (action === "dev-request-quote") { target = z.string().uuid().parse(input.id); result = { request: await adminQuote(target, { usd: input.usd, days: input.days, note: input.note ?? "" }) };
@@ -122,6 +124,11 @@ export async function POST(request: Request) {
     } else if (action === "dev-request-note") { target = z.string().uuid().parse(input.id); result = { request: await adminNote(target, input.note) };
     } else if (action === "dev-request-reply") { target = z.string().uuid().parse(input.id); result = { request: await addMessage(target, "admin", input.text) };
     } else { throw new AppError("Unknown administrator action."); }
+    if (action.startsWith("dev-request-") && target) {
+      const [req] = await db.select({ userId: devRequests.userId, title: devRequests.title }).from(devRequests).where(eq(devRequests.id, target));
+      const text: Record<string, string> = { "dev-request-quote": "Your quote is ready", "dev-request-status": "Your request was updated", "dev-request-deliver": "Your project was delivered", "dev-request-reply": "New message on your request" };
+      if (req && text[action]) after(() => notifyUser(req.userId, { kind: "order", title: text[action], body: req.title, url: `/build/requests/${target}` }));
+    }
     await audit(admin.id, `admin.${action}`, target);
     return Response.json(result);
   } catch(e) { return apiError(e); }

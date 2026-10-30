@@ -1,4 +1,4 @@
--- Digisms Pro "Websites & Bots" upgrade: run ONCE on an existing database.
+-- Store OTP "Websites & Bots" upgrade: run ONCE on an existing database.
 -- Skip it if you installed from the updated fresh-install schema.sql or used drizzle-kit push. Back up first.
 BEGIN;
 CREATE TABLE "dev_projects" (

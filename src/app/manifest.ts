@@ -8,8 +8,8 @@ const icon = (src: string, sizes: string, purpose?: string) => ({ src, sizes, ty
 export default function manifest(): MetadataRoute.Manifest {
   const manifest = {
     id: "/",
-    name: "Digisms Pro",
-    short_name: "Digisms Pro",
+    name: "Store OTP",
+    short_name: "Store OTP",
     description: "Your digital world, all in one place. Virtual numbers, digital products, and your personal wallet.",
     lang: "en",
     dir: "ltr",
@@ -38,7 +38,7 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
 
     screenshots: [
-      { src: "/screenshots/home-wide.png", sizes: "1280x720", type: "image/png", form_factor: "wide", label: "Digisms Pro home: your digital world in one place" },
+      { src: "/screenshots/home-wide.png", sizes: "1280x720", type: "image/png", form_factor: "wide", label: "Store OTP home: your digital world in one place" },
       { src: "/screenshots/numbers-wide.png", sizes: "1280x720", type: "image/png", form_factor: "wide", label: "Get a virtual number and receive codes instantly" },
       { src: "/screenshots/wallet-wide.png", sizes: "1280x720", type: "image/png", form_factor: "wide", label: "Your wallet and orders at a glance" },
       { src: "/screenshots/home-narrow.png", sizes: "720x1280", type: "image/png", form_factor: "narrow", label: "Home" },
@@ -61,12 +61,12 @@ export default function manifest(): MetadataRoute.Manifest {
       params: { title: "title", text: "text", url: "url" },
     },
 
-    // web+digisms://store, web+digisms:numbers, web+digisms://wallet ... (see /protocol).
-    protocol_handlers: [{ protocol: "web+digisms", url: "/protocol?url=%s" }],
+    // web+storeotp://store, web+storeotp:numbers, web+storeotp://wallet ... (see /protocol).
+    protocol_handlers: [{ protocol: "web+storeotp", url: "/protocol?url=%s" }],
 
-    // Open plain-text or CSV files from the OS with Digisms Pro (see /open-file).
+    // Open plain-text or CSV files from the OS with Store OTP (see /open-file).
     file_handlers: [
-      { action: "/open-file", name: "Digisms Pro list", accept: { "text/plain": [".txt"], "text/csv": [".csv"] }, launch_type: "single-client" },
+      { action: "/open-file", name: "Store OTP list", accept: { "text/plain": [".txt"], "text/csv": [".csv"] }, launch_type: "single-client" },
     ],
 
     // Re-use the open window instead of spawning a new one on every launch.
@@ -84,18 +84,18 @@ export default function manifest(): MetadataRoute.Manifest {
     // Windows 11 widget board (see /widgets/updates.json and /api/widgets/updates).
     widgets: [
       {
-        name: "Digisms Pro updates",
+        name: "Store OTP updates",
         short_name: "Updates",
-        description: "The latest news and offers from Digisms Pro.",
-        tag: "digisms-updates",
-        template: "digisms-updates",
+        description: "The latest news and offers from Store OTP.",
+        tag: "storeotp-updates",
+        template: "storeotp-updates",
         ms_ac_template: "/widgets/updates.json",
         data: "/api/widgets/updates",
         type: "application/json",
         auth: false,
         update: 3600,
         icons: [icon("/icons/icon-96.png", "96x96")],
-        screenshots: [{ src: "/screenshots/widget-updates.png", sizes: "387x387", label: "Digisms Pro updates widget" }],
+        screenshots: [{ src: "/screenshots/widget-updates.png", sizes: "387x387", label: "Store OTP updates widget" }],
       },
     ],
   };

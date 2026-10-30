@@ -45,7 +45,7 @@ export async function getUser(createDemo = false): Promise<User | null> {
     if (row && !row.user.suspended && (IS_DEMO || !row.user.isDemo)) return row.user;
   }
   if (createDemo && IS_DEMO) {
-    const [user] = await db.insert(users).values({ email: `preview-${randomBytes(10).toString("hex")}@sandbox.smsstore.local`, name: "Alex Morgan", role: "demo", balance: 2500, isDemo: true }).returning();
+    const [user] = await db.insert(users).values({ email: `preview-${randomBytes(10).toString("hex")}@sandbox.storeotp.local`, name: "Alex Morgan", role: "demo", balance: 2500, isDemo: true }).returning();
     await createSession(user.id);
     return user;
   }

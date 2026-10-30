@@ -30,11 +30,11 @@ export function OpenFileView() {
   }, []);
   return (
     <main className="site-main inner-main pwa-page" data-screen="open-file">
-      <span className="eyebrow">OPENED WITH DIGISMS PRO</span>
+      <span className="eyebrow">OPENED WITH STORE OTP</span>
       <h1>Your file</h1>
       <p className="pwa-sub">Files are read on this device only. Nothing is uploaded. Tap a line to search the store or find a number.</p>
-      {!supported && <div className="pwa-card">This browser can’t hand files to installed apps. Install Digisms Pro from Chrome or Edge on a computer, then right-click a .txt or .csv file and choose “Open with”.</div>}
-      {supported && !files.length && <div className="pwa-card">No file yet. Use “Open with → Digisms Pro” on a .txt or .csv file.</div>}
+      {!supported && <div className="pwa-card">This browser can’t hand files to installed apps. Install Store OTP from Chrome or Edge on a computer, then right-click a .txt or .csv file and choose “Open with”.</div>}
+      {supported && !files.length && <div className="pwa-card">No file yet. Use “Open with → Store OTP” on a .txt or .csv file.</div>}
       {files.map(file => (
         <section className="pwa-card" key={file.name}>
           <h2>{file.name}</h2>
@@ -49,7 +49,7 @@ export function OpenFileView() {
 
 /* ---------- /notes : PWA note_taking (stored only in this browser) ---------- */
 type Note = { id: string; text: string; at: number };
-const KEY = "digisms-pro-notes";
+const KEY = "store-otp-notes";
 function readNotes(): Note[] { try { const v = JSON.parse(localStorage.getItem(KEY) || "[]"); return Array.isArray(v) ? v.filter(n => n && typeof n.text === "string").slice(0, 200) : []; } catch { return []; } }
 export function NotesView() {
   const [notes, setNotes] = useState<Note[]>([]);

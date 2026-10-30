@@ -39,7 +39,7 @@ export function TempMailPage() {
   const [messages, setMessages] = useState<MessageSummary[] | null>(null); const [listError, setListError] = useState(""); const [refreshing, setRefreshing] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null); const [detail, setDetail] = useState<MessageFull | null>(null); const [detailBusy, setDetailBusy] = useState(false); const [detailError, setDetailError] = useState(""); const [images, setImages] = useState(false);
   const [provider, setProvider] = useState(""); const [name, setName] = useState(""); const [createBusy, setCreateBusy] = useState(false); const [createError, setCreateError] = useState(""); const [deleteBusy, setDeleteBusy] = useState(false);
-  const [copied, setCopied] = useState(""); const [, tick] = useState(0); const seen = useRef(new Set<string>()); const retiredKey = user ? `digisms:tempmail:retired:${user.id}` : "";
+  const [copied, setCopied] = useState(""); const [, tick] = useState(0); const seen = useRef(new Set<string>()); const retiredKey = user ? `storeotp:tempmail:retired:${user.id}` : "";
   const active = boxes?.find(b => b.id === activeId) || null;
 
   useEffect(() => { if (!retiredKey) return; try { setRetired(JSON.parse(localStorage.getItem(retiredKey) || "[]")); } catch { setRetired([]); } }, [retiredKey]);

@@ -1,4 +1,4 @@
-# Digisms Pro
+# Store OTP
 
 A complete English-language digital marketplace built with **Next.js App Router, React, TypeScript, PostgreSQL, and Drizzle ORM**, ready to host on **Vercel with Supabase PostgreSQL and Storage**.
 
@@ -141,7 +141,7 @@ That is **23 allowlisted REST operations**, plus global activation and reseller 
 
 Important distinctions:
 - Console requests are **administrative provider operations**, not local customer purchases. Provisioning a number in the console spends provider credits without automatically creating a local wallet order.
-- NumberOTP reseller sub-users and Digisms Pro users are distinct systems; the console manages provider sub-users explicitly. Provider sub-user events are audited, not automatically translated into unverified local wallet credits.
+- NumberOTP reseller sub-users and Store OTP users are distinct systems; the console manages provider sub-users explicitly. Provider sub-user events are audited, not automatically translated into unverified local wallet credits.
 - `NUMBEROTP_SUBUSER_API_KEY` is required for the two sub-user-hosted checkout operations. The reseller key is not silently substituted.
 - Public reseller signup needs a real Cloudflare Turnstile token and subsequent provider email verification.
 - Local SMS markup is separate from the provider's reseller sub-user multiplier/override settings.
@@ -248,8 +248,8 @@ Production validation:
 1. `npx next typegen`
 2. `npm exec tsc -- --noEmit --pretty false`
 3. `npm run build`
-4. Start the production application through your hosting/runtime process and confirm `/api/health`. It now verifies all application tables and columns and returns `app: "digisms-pro"`; a database ping alone is not accepted as application readiness.
-5. Run `PREVIEW_URL=https://YOUR_DEPLOYMENT node scripts/verify-preview.mjs`. This read-only check verifies that the deployed entry page actually renders Digisms Pro, rejects starter-template content, checks the release identity and cache headers, and opens the store, numbers, admin, signup, and wallet routes. Test the exact URL customers use, not only localhost.
+4. Start the production application through your hosting/runtime process and confirm `/api/health`. It now verifies all application tables and columns and returns `app: "store-otp"`; a database ping alone is not accepted as application readiness.
+5. Run `PREVIEW_URL=https://YOUR_DEPLOYMENT node scripts/verify-preview.mjs`. This read-only check verifies that the deployed entry page actually renders Store OTP, rejects starter-template content, checks the release identity and cache headers, and opens the store, numbers, admin, signup, and wallet routes. Test the exact URL customers use, not only localhost.
 
 The original browser smoke test is `scripts/smoke.mjs`. Country/payment browser tests are in `scripts/payment-browser.mjs`; mocked Direct API contract tests are in `scripts/payment-contract.mjs` (commands in ASHTECHPAY.md). It requires a running **sandbox** app and Chromium (`npx playwright install chromium`). Run `PREVIEW_URL=http://localhost:3000 node --import dotenv/config --import tsx scripts/smoke.mjs` against a disposable sandbox database. The test intentionally creates sandbox purchases, support records, and archived test listings, and restores modified store settings. It must never be pointed at a real-money production store.
 
@@ -302,7 +302,7 @@ A new **Websites & Bots** category (`/build`) lets customers order custom develo
 - **Database:** run `supabase/upgrade-dev-service.sql` once on an existing database (a fresh install of `supabase/schema.sql` already includes the tables). The category is added automatically on first load.
 - Payment happens only when the customer accepts a quote. Paid projects appear under **Projects** in the customer's purchases.
 
-## Digi AI assistant (Groq)
+## Store OTP AI assistant (Groq)
 
 A floating **Ask AI** button opens a chat that helps customers find products, virtual number services and prices, start a website or bot brief, check their wallet and orders, and send a support ticket to your team.
 

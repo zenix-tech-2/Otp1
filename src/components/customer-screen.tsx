@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Headset, ShieldCheck, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 
-export function CustomerScreen({ title, subtitle, children, eyebrow = "YOUR DIGISMS PRO", backHref = "/account", backLabel = "Back to account", wide = false, screen = "customer", aside }: { title: string; subtitle?: string; children: ReactNode; eyebrow?: string; backHref?: string; backLabel?: string; wide?: boolean; screen?: string; aside?: ReactNode }) {
+export function CustomerScreen({ title, subtitle, children, eyebrow = "YOUR STORE OTP", backHref = "/account", backLabel = "Back to account", wide = false, screen = "customer", aside }: { title: string; subtitle?: string; children: ReactNode; eyebrow?: string; backHref?: string; backLabel?: string; wide?: boolean; screen?: string; aside?: ReactNode }) {
   return <main className={`site-main inner-main customer-screen ${wide ? "customer-screen-wide" : ""}`} data-screen={screen}>
     <Link href={backHref} className="screen-back"><ArrowLeft size={15}/>{backLabel}</Link>
     <header className="screen-heading"><span className="eyebrow">{eyebrow}</span><h1>{title}</h1>{subtitle && <p>{subtitle}</p>}</header>

@@ -1,4 +1,4 @@
-/* Digi AI assistant */
+/* Store OTP AI assistant */
 .ai-panel{position:fixed;top:0;left:0;right:0;height:100dvh;z-index:300;display:flex;flex-direction:column;background:#f5f7fc;color:#14213d}
 @media(min-width:900px){.ai-panel{top:auto;left:auto;right:24px;bottom:24px;width:410px;height:min(700px,calc(100dvh - 48px))!important;border-radius:22px;overflow:hidden;box-shadow:0 24px 70px rgba(15,25,60,.28);border:1px solid #e3e9f5}}
 .ai-header{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px 10px 14px;background:#fff;border-bottom:1px solid #e9eef8}

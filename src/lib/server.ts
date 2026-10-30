@@ -8,7 +8,7 @@ import { productSeeds } from "./catalog";
 import { initialCategories } from "./categories";
 
 export const IS_DEMO = process.env.APP_MODE === "demo" || (!process.env.VERCEL && process.env.APP_MODE !== "live");
-export const defaultSettings = { appName: "Digisms Pro", smsMarkup: 25, smmMarkup: 35, supportEmail: "support@smsstore.com", maintenance: false, allowRegistrations: true, announcement: "Your digital essentials. All in one place.", currency: "USD" };
+export const defaultSettings = { appName: "Store OTP", smsMarkup: 25, smmMarkup: 35, supportEmail: "support@sellizi.store", maintenance: false, allowRegistrations: true, announcement: "Your digital essentials. All in one place.", currency: "USD" };
 export type AppSettings = typeof defaultSettings;
 let seedPromise: Promise<void> | undefined;
 export function ensureSeed() {
@@ -22,7 +22,7 @@ export function ensureSeed() {
         await db.transaction(async tx => {
           const created = await tx.insert(settings).values({ key: "demo_seeded", value: { done: true } }).onConflictDoNothing().returning();
           if (created.length) await tx.insert(announcements).values([
-            { title: "Welcome to your digital neighborhood", body: "Meet Digisms Pro. Find virtual numbers, premium apps, and digital essentials in one simple place.", kind: "news" },
+            { title: "Welcome to your digital neighborhood", body: "Meet Store OTP. Find virtual numbers, premium apps, and digital essentials in one simple place.", kind: "news" },
             { title: "Your next upgrade is here", body: "Explore our growing collection of premium apps and creative tools. New favorites are waiting in the store.", kind: "update" },
             { title: "A safer way to get verified", body: "Keep your personal number private. Explore the virtual number flow in our clearly labeled sandbox before connecting your provider.", kind: "service" },
           ]);

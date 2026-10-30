@@ -62,6 +62,7 @@ export async function POST(request: Request) {
       // Bookkeeping runs after the response is sent, so the buyer isn't kept waiting for it.
       after(async () => {
         await audit(user.id, "rental.reserved", pending.id, { demo: IS_DEMO, amount, currency: user.currency, hours: data.hours, gift: Boolean(recipient) }).catch(() => {});
+        if (!recipient) await notifyUser(user.id, { kind: "number", title: "Rental is active", body: `${service.name} · ${data.countryName}: your rented number is ready. We’ll alert you for every SMS.`, url: "/numbers" });
         if (recipient) await notifyUser(recipient.id, { kind: "gift", title: `${maskedName(user.name)} sent you a number`, body: `A ${rentLabel(data.hours)} rental for ${service.name} · ${data.countryName} is ready in My numbers.${giftMessage ? ` “${giftMessage}”` : ""}`, url: `/numbers?tab=rentals&rental=${pending.id}` }).catch(() => {});
       });
       return Response.json(giftReply(reservation.order, rental));

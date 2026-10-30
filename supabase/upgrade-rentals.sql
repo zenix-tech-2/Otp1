@@ -1,4 +1,4 @@
--- Digisms Pro long-term rentals upgrade: run ONCE on an existing database that already
+-- Store OTP long-term rentals upgrade: run ONCE on an existing database that already
 -- has the Ashtech Pay schema. Skip it if you installed from the updated fresh-install schema.sql
 -- or used drizzle-kit push. Back up first.
 BEGIN;

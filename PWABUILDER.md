@@ -1,17 +1,17 @@
-# Digisms Pro: PWABuilder checklist
+# Store OTP: PWABuilder checklist
 
 After deploying, open https://www.pwabuilder.com, enter your URL and re-test.
 
 ## What is already wired up
 | PWABuilder item | Where |
 |---|---|
-| Name / short name = **Digisms Pro** | `src/app/manifest.ts`, `src/app/layout.tsx`, `src/lib/server.ts` |
+| Name / short name = **Store OTP** | `src/app/manifest.ts`, `src/app/layout.tsx`, `src/lib/server.ts` |
 | Service worker (offline page, nav preload, asset cache, push, background sync, periodic sync, widgets) | `public/sw.js` (registered in `<head>` in `src/app/layout.tsx` and again in `pwa-provider.tsx`) |
 | Screenshots (wide + narrow) | `public/screenshots/` |
 | Icons: any, maskable, monochrome | `public/icons/` |
 | Shortcuts, categories, dir, lang, orientation, display, display_override | manifest |
 | `share_target` | `/share` redirects shared text into store search |
-| `protocol_handlers` | `web+digisms:` handled by `/protocol` (allow-listed destinations only) |
+| `protocol_handlers` | `web+storeotp:` handled by `/protocol` (allow-listed destinations only) |
 | `file_handlers` (.txt, .csv) | `/open-file` (read on-device, nothing uploaded) |
 | `launch_handler`, `edge_side_panel`, `tab_strip` / tabbed, window-controls-overlay | manifest + `src/app/pwa.css` |
 | `note_taking` | `/notes` (stored in the browser only) |
@@ -26,5 +26,5 @@ After deploying, open https://www.pwabuilder.com, enter your URL and re-test.
 ## Notes
 - The old PWABuilder "Download a Service Worker" snippets use `importScripts` from storage.googleapis.com. `/sw.js` is served with `script-src 'self'`, so they would be blocked; `public/sw.js` has the same features without any external script.
 - The screenshots are generated mockups in the app's colours. Replace them with real screenshots at the same file names and sizes when you have them.
-- If your database already stores the app name as "SMS store", change it in Admin → Settings.
-- `support@smsstore.com` (default support email in `src/lib/server.ts`) was left unchanged. Set your real address in Admin → Settings.
+- If your database already stores the app name as "Store OTP", change it in Admin → Settings.
+- `support@sellizi.store` (default support email in `src/lib/server.ts`) was left unchanged. Set your real address in Admin → Settings.

@@ -42,7 +42,7 @@ export async function smmRequest(id: SmmProviderId, params: Record<string, strin
   const body = new URLSearchParams({ key }); for (const [name, value] of Object.entries(params)) body.set(name, String(value));
   let response: Response;
   try {
-    response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json", "User-Agent": "Mozilla/5.0 (compatible; DigismsBoost/1.0)" }, body, signal: AbortSignal.timeout(timeoutMs), cache: "no-store" });
+    response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json", "User-Agent": "Mozilla/5.0 (compatible; StoreOTPBoost/1.0)" }, body, signal: AbortSignal.timeout(timeoutMs), cache: "no-store" });
   } catch { throw new ProviderError("The provider could not be reached. Please try again in a moment.", 502, true); }
   let data: unknown;
   try { data = JSON.parse(await response.text()); } catch { throw new ProviderError("The provider returned an unexpected response.", 502, true); }

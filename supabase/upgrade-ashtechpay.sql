@@ -1,4 +1,4 @@
--- Digisms Pro Ashtech Pay upgrade: run ONCE on an existing pre-payment database.
+-- Store OTP Ashtech Pay upgrade: run ONCE on an existing pre-payment database.
 -- Back up first. This preserves all existing wallet balances as USD cents.
 -- Do not also apply this if you used drizzle-kit push or the updated fresh-install schema.sql.
 BEGIN;

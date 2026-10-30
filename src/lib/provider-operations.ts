@@ -8,7 +8,7 @@ export const providerOperations: ProviderOperation[] = [
   { id: "activation-wait", name: "Wait for an OTP (long poll)", group: "Activations", method: "GET", path: "/activations/:id/wait", note: "Waits up to 55 seconds for a message." },
   { id: "rental-create", name: "Rent a long-term number", group: "Rentals", method: "POST", path: "/rentals", example: { service: "wa", country: "187", duration: 24 }, note: "duration is in hours: 2, 4, 12, or multiples of 24 up to 720. This admin operation spends provider credits directly, outside customer wallet orders. Customers rent from the Long-term rentals tab." },
   { id: "profile-get", name: "Reseller profile & balances", group: "Reseller settings", method: "GET", path: "/reseller/profile" },
-  { id: "profile-update", name: "Update branding & webhooks", group: "Reseller settings", method: "PATCH", path: "/reseller/profile", example: { brand: { name: "Digisms Pro", color: "#1754f5", supportEmail: "support@example.com" }, allowSelfFundDefault: true, minSubUserTopup: 10 } },
+  { id: "profile-update", name: "Update branding & webhooks", group: "Reseller settings", method: "PATCH", path: "/reseller/profile", example: { brand: { name: "Store OTP", color: "#1754f5", supportEmail: "support@example.com" }, allowSelfFundDefault: true, minSubUserTopup: 10 } },
   { id: "users-list", name: "List reseller sub-users", group: "Sub-users", method: "GET", path: "/reseller/users" },
   { id: "users-create", name: "Create a sub-user", group: "Sub-users", method: "POST", path: "/reseller/users", example: { email: "", password: "", name: "", initialBalance: 0, allowSelfFund: true } },
   { id: "users-get", name: "Get sub-user details", group: "Sub-users", method: "GET", path: "/reseller/users/:id" },

@@ -20,8 +20,8 @@ function basics(what: string): FormSection {
     { key: "summary", label: "What do you want built?", type: "textarea", required: true, min: 20, max: 2000, placeholder: "Describe the idea in a few sentences. What should it do, and what should people be able to achieve with it?" },
     { key: "goal", label: "Main goal", type: "select", required: true, options: o("Launch a new business or idea|Improve something I already have|Automate a manual process|Sell products or services|Build an audience or community|An internal tool for my team|Something else") },
     { key: "audience", label: "Who will use it?", type: "textarea", required: true, max: 1000, placeholder: "e.g. Young professionals in Lagos, students, my existing customers…" },
-    { key: "contactMethod", label: "Best way to reach you", type: "select", required: true, options: o("Messages inside Digisms|Email|WhatsApp|Telegram|Phone call") },
-    { key: "contactDetail", label: "Your email, number or username", type: "text", max: 120, placeholder: "How should we contact you?", showIf: { key: "contactMethod", notEquals: "Messages inside Digisms" } },
+    { key: "contactMethod", label: "Best way to reach you", type: "select", required: true, options: o("Messages inside Store OTP|Email|WhatsApp|Telegram|Phone call") },
+    { key: "contactDetail", label: "Your email, number or username", type: "text", max: 120, placeholder: "How should we contact you?", showIf: { key: "contactMethod", notEquals: "Messages inside Store OTP" } },
   ] };
 }
 function wrapUp(): FormSection {

@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { Bell, BellOff, BellRing, CheckCheck, Gift, Package, Smartphone, Sparkles, TrendingUp, Wallet } from "lucide-react";
+import { Bell, BellOff, BellRing, CheckCheck, Gift, Headset, Mail, Megaphone, Package, Smartphone, Sparkles, TrendingUp, Wallet, X } from "lucide-react";
 import { api, useStore } from "./app-provider";
 import { usePwa } from "./pwa-provider";
 import { Spinner } from "./ui";
@@ -27,8 +27,8 @@ export function InboxProvider({ children }: { children: ReactNode }) {
     const tick = () => { if (document.visibilityState === "visible") refresh(); };
     const timer = window.setInterval(tick, POLL_MS); const wake = () => tick(); const manual = () => refresh();
     const onWorker = (event: MessageEvent) => { if (event.data?.type === "PUSH_RECEIVED") refresh(); }; navigator.serviceWorker?.addEventListener("message", onWorker);
-    document.addEventListener("visibilitychange", wake); window.addEventListener("focus", wake); window.addEventListener("online", wake); window.addEventListener("digisms:inbox-refresh", manual);
-    return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", wake); window.removeEventListener("focus", wake); window.removeEventListener("online", wake); window.removeEventListener("digisms:inbox-refresh", manual); navigator.serviceWorker?.removeEventListener("message", onWorker); };
+    document.addEventListener("visibilitychange", wake); window.addEventListener("focus", wake); window.addEventListener("online", wake); window.addEventListener("storeotp:inbox-refresh", manual);
+    return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", wake); window.removeEventListener("focus", wake); window.removeEventListener("online", wake); window.removeEventListener("storeotp:inbox-refresh", manual); navigator.serviceWorker?.removeEventListener("message", onWorker); };
   }, [userId, refresh]);
   const markRead = useCallback(async (ids?: string[]) => {
     const now = new Date().toISOString(); setItems(list => list.map(i => (!ids || ids.includes(i.id)) && !i.readAt ? { ...i, readAt: now } : i)); setUnread(n => ids ? Math.max(0, n - ids.length) : 0);
@@ -92,16 +92,16 @@ export function PushCard() {
   const { state, busy, enable, disable } = usePushToggle();
   if (state === "loading" || state === "unconfigured") return null;
   const copy: Record<Exclude<PushState, "loading" | "unconfigured">, { title: string; text: string }> = {
-    on: { title: "Push notifications are on", text: "We’ll alert this device about orders, gifts, wallet top-ups and boosts, even when the app is closed." },
-    off: { title: "Get alerts the moment things happen", text: "Turn on push notifications for delivered orders, gifts, wallet top-ups and finished boosts." },
+    on: { title: "Push notifications are on", text: "We’ll alert this device about purchases, SMS codes, new emails, news, gifts and wallet activity, even when the app is closed." },
+    off: { title: "Get alerts the moment things happen", text: "Turn on push notifications for purchases, SMS codes, new emails, news, updates, gifts and wallet top-ups." },
     blocked: { title: "Notifications are blocked", text: "Allow notifications for this site in your browser settings, then come back and turn them on." },
     unsupported: { title: "Push isn’t available here", text: "This browser doesn’t support push notifications. You’ll still see everything in this inbox." },
-    "ios-install": { title: "Install the app to get push on iPhone", text: "On iPhone and iPad, push works after you tap Share → Add to Home Screen and open Digisms Pro from there." },
+    "ios-install": { title: "Install the app to get push on iPhone", text: "On iPhone and iPad, push works after you tap Share → Add to Home Screen and open Store OTP from there." },
   };
   const c = copy[state];
   return <div className={`push-card push-${state}`}><span className="push-card-icon">{state === "on" ? <BellRing size={22} /> : state === "off" ? <Bell size={22} /> : <BellOff size={22} />}</span><div><strong>{c.title}</strong><p>{c.text}</p></div>{(state === "on" || state === "off") && <button className={`button ${state === "on" ? "button-secondary" : "button-primary"} button-small`} disabled={busy} onClick={state === "on" ? disable : enable}>{busy ? <Spinner /> : state === "on" ? "Turn off" : "Turn on"}</button>}</div>;
 }
-const kindIcon: Record<string, typeof Bell> = { order: Package, gift: Gift, wallet: Wallet, boost: TrendingUp, number: Smartphone, system: Sparkles };
+const kindIcon: Record<string, typeof Bell> = { order: Package, gift: Gift, wallet: Wallet, boost: TrendingUp, number: Smartphone, mail: Mail, news: Megaphone, support: Headset, system: Sparkles };
 export function timeAgo(iso: string) { const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000); if (seconds < 60) return "just now"; if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`; if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`; if (seconds < 7 * 86400) return `${Math.floor(seconds / 86400)}d ago`; return new Date(iso).toLocaleDateString(); }
 export function InboxList() {
   const { items, unread, loading, markRead } = useInbox(); const { user } = useStore();
@@ -109,4 +109,21 @@ export function InboxList() {
   if (loading && !items.length) return <div className="loading-state"><Spinner /></div>;
   if (!items.length) return <div className="inbox-empty"><Bell size={28} /><strong>You’re all caught up</strong><p>Order updates, gifts and wallet activity will appear here as they happen.</p></div>;
   return <div className="inbox-list">{unread > 0 && <button className="text-link-button inbox-markall" onClick={() => markRead()}><CheckCheck size={14} />Mark all as read</button>}{items.map(item => { const Icon = kindIcon[item.kind] || Bell; const inner = <><span className={`inbox-icon inbox-${item.kind}`}><Icon size={19} /></span><div><strong>{item.title}</strong>{item.body && <p>{item.body}</p>}<time dateTime={item.createdAt}>{timeAgo(item.createdAt)}</time></div>{!item.readAt && <i className="inbox-unread" aria-label="Unread" />}</>; return item.url ? <Link key={item.id} href={item.url} className={`inbox-item ${item.readAt ? "" : "is-unread"}`} onClick={() => !item.readAt && markRead([item.id])}>{inner}</Link> : <button key={item.id} className={`inbox-item ${item.readAt ? "" : "is-unread"}`} onClick={() => !item.readAt && markRead([item.id])}>{inner}</button>; })}</div>;
+}
+
+const ASK_KEY = "storeotp:push-ask";
+/** Asks once, a few seconds after sign-in, to allow phone notifications. Permission has to come from a tap, so this shows a small card with an Allow button. */
+export function PushPrompt() {
+  const { user } = useStore(); const { state, busy, enable } = usePushToggle(); const [show, setShow] = useState(false);
+  useEffect(() => {
+    if (!user || state !== "off") { setShow(false); return; }
+    let snoozed = false; try { snoozed = Date.now() < Number(localStorage.getItem(ASK_KEY) || 0); } catch { /* storage unavailable: ask anyway */ }
+    if (snoozed) return; const timer = window.setTimeout(() => setShow(true), 5000); return () => window.clearTimeout(timer);
+  }, [user, state]);
+  function later(days: number) { try { localStorage.setItem(ASK_KEY, String(Date.now() + days * 86400_000)); } catch { /* ignore */ } setShow(false); }
+  if (!show || state !== "off") return null;
+  return <div className="push-ask" role="dialog" aria-label="Turn on notifications"><span className="push-ask-icon"><BellRing size={22} /></span>
+    <div><strong>Turn on notifications</strong><p>Get alerted instantly for SMS codes, new emails, purchases, news and updates, even when the app is closed.</p>
+      <div className="push-ask-actions"><button className="button button-primary button-small" disabled={busy} onClick={async () => { await enable(); setShow(false); }}>{busy ? <Spinner size={14} /> : "Allow notifications"}</button><button className="button button-secondary button-small" onClick={() => later(3)}>Not now</button></div></div>
+    <button className="push-ask-x" aria-label="Dismiss" onClick={() => later(7)}><X size={16} /></button></div>;
 }

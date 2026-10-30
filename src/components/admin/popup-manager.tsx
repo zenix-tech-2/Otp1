@@ -4,13 +4,13 @@ import { ImagePlus, Pencil, Trash2, X } from "lucide-react";
 import { api, useStore } from "../app-provider";
 import { InlineError, Loading, Spinner } from "../ui";
 import { AdminHeading } from "./admin-workspace";
-import { POPUP_IMAGE_MAX_CHARS, POPUP_LIMIT, type Popup } from "@/lib/popup-core";
+import { APP_APK_PATH, POPUP_IMAGE_MAX_CHARS, POPUP_LIMIT, type Popup } from "@/lib/popup-core";
 
-type Draft = { id?: string; title: string; body: string; image: string; buttonLabel: string; linkUrl: string; linkLabel: string; active: boolean; frequency: "session" | "once"; startsAt: string; endsAt: string };
-const blank: Draft = { title: "", body: "", image: "", buttonLabel: "Close", linkUrl: "", linkLabel: "", active: true, frequency: "session", startsAt: "", endsAt: "" };
+type Draft = { id?: string; title: string; body: string; image: string; buttonLabel: string; linkUrl: string; linkLabel: string; downloadUrl: string; downloadLabel: string; active: boolean; frequency: "session" | "once"; startsAt: string; endsAt: string };
+const blank: Draft = { title: "", body: "", image: "", buttonLabel: "Close", linkUrl: "", linkLabel: "", downloadUrl: "", downloadLabel: "Download app", active: true, frequency: "session", startsAt: "", endsAt: "" };
 const pad = (n: number) => String(n).padStart(2, "0");
 const localInput = (d: string | null) => { if (!d) return ""; const x = new Date(d); return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}T${pad(x.getHours())}:${pad(x.getMinutes())}`; };
-const toDraft = (p: Popup): Draft => ({ id: p.id, title: p.title, body: p.body, image: p.image, buttonLabel: p.buttonLabel, linkUrl: p.linkUrl, linkLabel: p.linkLabel, active: p.active, frequency: p.frequency, startsAt: localInput(p.startsAt), endsAt: localInput(p.endsAt) });
+const toDraft = (p: Popup): Draft => ({ id: p.id, title: p.title, body: p.body, image: p.image, buttonLabel: p.buttonLabel, linkUrl: p.linkUrl, linkLabel: p.linkLabel, downloadUrl: p.downloadUrl || "", downloadLabel: p.downloadLabel || "Download app", active: p.active, frequency: p.frequency, startsAt: localInput(p.startsAt), endsAt: localInput(p.endsAt) });
 
 // Shrinks the chosen picture in the browser so it stays small, then keeps it as a data URL inside the pop-up.
 async function shrink(file: File): Promise<string> {
@@ -23,7 +23,7 @@ async function shrink(file: File): Promise<string> {
 }
 
 export function PopupPreview({ draft }: { draft: Draft }) {
-  return <div className="popup-card popup-card-preview">{draft.image && <img className="popup-image" src={draft.image} alt="" />}<div className="popup-content"><h2>{draft.title || "Pop-up title"}</h2>{draft.body && <p>{draft.body}</p>}</div><div className="popup-actions">{draft.linkUrl && draft.linkLabel && <span className="popup-cta">{draft.linkLabel}</span>}<span className={draft.linkUrl && draft.linkLabel ? "popup-close popup-close-quiet" : "popup-close"}>{draft.buttonLabel || "Close"}</span></div></div>;
+  return <div className="popup-card popup-card-preview">{draft.image && <img className="popup-image" src={draft.image} alt="" />}<div className="popup-content"><h2>{draft.title || "Pop-up title"}</h2>{draft.body && <p>{draft.body}</p>}</div><div className="popup-actions">{draft.downloadUrl && <span className="popup-cta popup-cta-download">{draft.downloadLabel || "Download app"}</span>}{draft.linkUrl && draft.linkLabel && <span className="popup-cta">{draft.linkLabel}</span>}<span className={draft.linkUrl && draft.linkLabel ? "popup-close popup-close-quiet" : "popup-close"}>{draft.buttonLabel || "Close"}</span></div></div>;
 }
 
 export function AdminPopups() {
@@ -50,6 +50,9 @@ export function AdminPopups() {
         <label className="span2">Title<input required minLength={2} maxLength={100} placeholder="Important Notice" value={draft.title} onChange={e => set({ title: e.target.value })}/></label>
         <label className="span2">Message<textarea rows={5} maxLength={1200} placeholder="What do you want customers to know?" value={draft.body} onChange={e => set({ body: e.target.value })}/></label>
         <div className="span2 popup-image-field"><span>Image (optional)</span>{draft.image ? <div className="popup-image-chosen"><img src={draft.image} alt=""/><button type="button" className="button button-secondary button-small" onClick={() => set({ image: "" })}><X size={14}/>Remove image</button></div> : <button type="button" className="button button-secondary" disabled={imageBusy} onClick={() => file.current?.click()}>{imageBusy ? <Spinner size={15}/> : <ImagePlus size={16}/>}Upload image</button>}<input ref={file} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={e => pick(e.target.files)}/></div>
+        <label className="span2" style={{ display: "flex", alignItems: "center", gap: 8 }}><input style={{ width: "auto" }} type="checkbox" checked={!!draft.downloadUrl} onChange={e => set({ downloadUrl: e.target.checked ? APP_APK_PATH : "" })}/>Offer the mobile app (APK) download in this pop-up</label>
+        {draft.downloadUrl && <><label>Download button text<input maxLength={30} value={draft.downloadLabel} onChange={e => set({ downloadLabel: e.target.value })}/></label>
+        <label>File path (in the public folder)<input maxLength={150} value={draft.downloadUrl} onChange={e => set({ downloadUrl: e.target.value })}/></label></>}
         <label>Close button text<input maxLength={30} value={draft.buttonLabel} onChange={e => set({ buttonLabel: e.target.value })}/></label>
         <label>How often<select value={draft.frequency} onChange={e => set({ frequency: e.target.value as Draft["frequency"] })}><option value="session">Every time they sign in</option><option value="once">Only once per customer</option></select></label>
         <label>Action button text (optional)<input maxLength={30} placeholder="Send a gift" value={draft.linkLabel} onChange={e => set({ linkLabel: e.target.value })}/></label>

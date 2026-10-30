@@ -7,6 +7,8 @@ export type Popup = {
   buttonLabel: string;
   /** Optional call-to-action target: a path inside the app (/gift) or an https:// link. */
   linkUrl: string; linkLabel: string;
+  /** Optional file offered for download (the mobile app). A path inside the app such as /store-otp.apk, or "" for none. */
+  downloadUrl?: string; downloadLabel?: string;
   active: boolean;
   /** "session" = shown once per login session. "once" = shown once per customer, then never again (until edited). */
   frequency: PopupFrequency;
@@ -23,3 +25,5 @@ export function popupLive(p: Popup, now = Date.now()) {
   return true;
 }
 export function safePopupLink(url: string) { return url.startsWith("/") && !url.startsWith("//") ? "internal" : /^https:\/\//i.test(url) ? "external" : null; }
+export const APP_APK_PATH = "/store-otp.apk";
+export function safeDownloadPath(url: string) { return /^\/[\w./-]{1,120}\.(apk|aab|zip|pdf)$/i.test(url) && !url.includes("..") && !url.startsWith("//"); }

@@ -1,4 +1,4 @@
--- Digisms Pro "Boost" (SMM services) upgrade: run ONCE on an existing database.
+-- Store OTP "Boost" (SMM services) upgrade: run ONCE on an existing database.
 -- Skip it if you installed from the updated fresh-install schema.sql or used `npx drizzle-kit push`.
 -- Back up first.
 BEGIN;

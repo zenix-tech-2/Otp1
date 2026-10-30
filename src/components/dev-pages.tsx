@@ -76,7 +76,7 @@ function FieldInput({ field, value, error, onChange }: { field: FormField; value
 }
 export function DevOrderForm({ typeId }: { typeId: string }) {
   const type = getDevType(typeId); const { user, openPanel } = useStore(); const router = useRouter();
-  const draftKey = `digisms:dev-draft:${typeId}`;
+  const draftKey = `storeotp:dev-draft:${typeId}`;
   const [answers, setAnswers] = useState<Brief>({}); const [step, setStep] = useState(0); const [errors, setErrors] = useState<Record<string, string>>({}); const [busy, setBusy] = useState(false); const [serverError, setServerError] = useState(""); const [loaded, setLoaded] = useState(false);
   const top = useRef<HTMLDivElement>(null);
   useEffect(() => { try { const raw = localStorage.getItem(draftKey); if (raw) { const d = JSON.parse(raw); if (d && typeof d.answers === "object") { setAnswers(d.answers); setStep(Math.min(Number(d.step) || 0, (type?.sections.length || 0))); } } } catch { /* storage unavailable */ } setLoaded(true); }, [draftKey, type?.sections.length]);

@@ -10,7 +10,7 @@ Configure these **server-side** variables in Vercel; never place secrets in `NEX
 | --- | --- |
 | `APP_MODE` | `live` for actual payments; `demo` for the isolated preview |
 | `ASHTECH_API_KEY` | Your **`ak_...` Direct API key** |
-| `ASHTECH_USER_ID` | The merchant profile ID that owns that key, not an Digisms Pro customer ID |
+| `ASHTECH_USER_ID` | The merchant profile ID that owns that key, not an Store OTP customer ID |
 | `ASHTECH_WEBHOOK_SECRET` | Your `whsec_...` secret from Ashtech Pay → API Key → Direct API → Webhook Secret |
 | `ASHTECH_BASE_URL` | `https://www.ashtechpay.com/v1` (the default) |
 | `APP_URL` | Your stable public HTTPS app origin, for example `https://store.example.com` |

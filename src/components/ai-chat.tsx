@@ -10,7 +10,7 @@ import { BrandIcon, Spinner } from "./ui";
 
 type ChatMessage = { id: string; role: "user" | "assistant"; text: string; cards?: ChatCard[]; images?: number; error?: boolean; escalated?: boolean };
 type Attachment = { id: string; mediaType: "image/jpeg"; data: string; preview: string };
-const STORE_KEY = "digisms:ai-chat:v1";
+const STORE_KEY = "storeotp:ai-chat:v1";
 const suggestions = ["What can I buy here?", "I need a number for WhatsApp", "I want a Telegram bot built", "My payment is still pending"];
 const uid = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now() + Math.random()));
 
@@ -55,7 +55,7 @@ export function AiChat() {
   const panel = useRef<HTMLElement>(null); const scroller = useRef<HTMLDivElement>(null); const picker = useRef<HTMLInputElement>(null); const field = useRef<HTMLTextAreaElement>(null); const userId = user?.id || "guest";
   const admin = pathname === "/admin" || pathname.startsWith("/admin/");
 
-  useEffect(() => { const handler = () => setOpen(true); window.addEventListener("digisms:open-assistant", handler); return () => window.removeEventListener("digisms:open-assistant", handler); }, []);
+  useEffect(() => { const handler = () => setOpen(true); window.addEventListener("storeotp:open-assistant", handler); return () => window.removeEventListener("storeotp:open-assistant", handler); }, []);
   // Restore a recent chat, but never across different accounts on a shared device.
   useEffect(() => { try { const raw = localStorage.getItem(STORE_KEY); if (raw) { const d = JSON.parse(raw); if (d?.userId === userId && Date.now() - Number(d.at) < 86400000 && Array.isArray(d.messages)) setMessages(d.messages); else localStorage.removeItem(STORE_KEY); } } catch { /* storage unavailable */ } setLoaded(true); }, [userId]);
   useEffect(() => { if (!loaded) return; try { if (messages.length) localStorage.setItem(STORE_KEY, JSON.stringify({ userId, at: Date.now(), messages: messages.slice(-30) })); else localStorage.removeItem(STORE_KEY); } catch { /* storage unavailable */ } }, [messages, loaded, userId]);
@@ -96,13 +96,13 @@ export function AiChat() {
   if (admin) return null;
   const lastUserText = [...messages].reverse().find(m => m.role === "user")?.text;
   return <>
-    {open && <section ref={panel} className="ai-panel" role="dialog" aria-label="Digi AI assistant">
-      <header className="ai-header"><span className="ai-avatar"><Sparkles size={20} /></span><div className="ai-title"><strong>Digi AI</strong><span><i />Digisms assistant · replies instantly</span></div>
+    {open && <section ref={panel} className="ai-panel" role="dialog" aria-label="Store OTP AI assistant">
+      <header className="ai-header"><span className="ai-avatar"><Sparkles size={20} /></span><div className="ai-title"><strong>Store OTP AI</strong><span><i />Store OTP assistant · replies instantly</span></div>
         <button className="ai-icon" aria-label="Talk to a person" title="Talk to a person" onClick={human}><Headset size={18} /></button>
         <button className="ai-icon" aria-label="Start a new chat" title="New chat" onClick={reset}><RotateCcw size={18} /></button>
         <button className="ai-icon" aria-label="Close assistant" onClick={() => setOpen(false)}><X size={20} /></button></header>
       <div className="ai-messages" ref={scroller}>
-        {!messages.length && <div className="ai-welcome"><span className="ai-avatar ai-avatar-large"><Sparkles size={34} /></span><h2>Hi, I’m Digi AI 👋</h2><p>Ask me about products, virtual numbers, websites and bots, your wallet or your orders. You can also send a screenshot.</p>
+        {!messages.length && <div className="ai-welcome"><span className="ai-avatar ai-avatar-large"><Sparkles size={34} /></span><h2>Hi, I’m Store OTP AI 👋</h2><p>Ask me about products, virtual numbers, websites and bots, your wallet or your orders. You can also send a screenshot.</p>
           {enabled === false ? <div className="ai-offline"><p>The assistant isn’t switched on yet. Our team can still help you.</p><button className="button button-primary" onClick={human}>Contact support<ArrowRight size={14} /></button></div> : <div className="ai-chips">{suggestions.map(s => <button key={s} onClick={() => send(s)}>{s}</button>)}</div>}</div>}
         {messages.map(m => <div key={m.id} className={`ai-row ai-row-${m.role}`}><div className={`ai-bubble ai-bubble-${m.role} ${m.error ? "ai-bubble-error" : ""}`}>{m.images ? <small className="ai-attached"><ImagePlus size={12} />{m.images} image{m.images === 1 ? "" : "s"} attached</small> : null}<Rich text={m.text} />
           {m.error && lastUserText && <button className="ai-retry" onClick={() => send(lastUserText, m.id)}>Try again</button>}</div>
@@ -116,9 +116,9 @@ export function AiChat() {
         <form className="ai-form" onSubmit={e => { e.preventDefault(); send(input); }}>
           <input ref={picker} type="file" accept="image/*" multiple hidden onChange={e => attach(e.target.files)} />
           <button type="button" className="ai-attach" aria-label="Attach a screenshot" disabled={busy || images.length >= 3 || enabled === false} onClick={() => picker.current?.click()}><ImagePlus size={20} /></button>
-          <textarea ref={field} rows={1} value={input} maxLength={2000} placeholder="Message Digi AI…" disabled={enabled === false} onChange={e => { setInput(e.target.value); e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 110) + "px"; }} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }} />
+          <textarea ref={field} rows={1} value={input} maxLength={2000} placeholder="Message Store OTP AI…" disabled={enabled === false} onChange={e => { setInput(e.target.value); e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 110) + "px"; }} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }} />
           <button className="ai-send" aria-label="Send message" disabled={busy || enabled === false || (!input.trim() && !images.length)}>{busy ? <Spinner size={18} /> : <Send size={19} />}</button></form>
-        <p className="ai-disclaimer">Digi AI can make mistakes. Never share passwords, PINs or codes.</p></footer>
+        <p className="ai-disclaimer">Store OTP AI can make mistakes. Never share passwords, PINs or codes.</p></footer>
     </section>}
   </>;
 }

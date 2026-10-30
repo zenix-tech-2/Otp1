@@ -8,12 +8,12 @@ const starter = /Starter template|Arena Next\.js PostgreSQL Starter|Server-rende
 async function get(path) {
   const response = await fetch(`${base}${path}`, { cache: "no-store", headers: { "Cache-Control": "no-cache" }, signal: AbortSignal.timeout(30000) });
   assert.equal(response.status, 200, `${path} must return 200, not a startup error or redirect.`);
-  assert.equal(response.headers.get("x-digisms-release"), "digisms-pro-ashtech-v3", `${path} is not being served by the current Digisms Pro deployment.`);
+  assert.equal(response.headers.get("x-storeotp-release"), "store-otp-ashtech-v3", `${path} is not being served by the current Store OTP deployment.`);
   return response;
 }
 
 const health = await (await get("/api/health")).json();
-assert.equal(health.app, "digisms-pro");
+assert.equal(health.app, "store-otp");
 assert.equal(health.ok, true);
 assert.equal(health.database, "ready");
 console.log("PASS actual store schema and application health");
@@ -21,17 +21,17 @@ console.log("PASS actual store schema and application health");
 const home = await get("/");
 const html = await home.text();
 assert(!starter.test(html), "The starter screen is still being served.");
-assert(html.includes('data-application="digisms-pro"'), "The actual storefront was not server-rendered.");
+assert(html.includes('data-application="store-otp"'), "The actual storefront was not server-rendered.");
 assert(html.includes("Your digital needs"), "The store hero is missing.");
 assert(html.includes("Popular products"), "The product section is missing.");
 assert(html.includes("Our services"), "The service categories are missing.");
 assert(/no-store/i.test(home.headers.get("cache-control") || ""), "The storefront must not serve cached starter HTML.");
-console.log("PASS real Digisms Pro homepage; no starter screen; entry-page caching disabled");
+console.log("PASS real Store OTP homepage; no starter screen; entry-page caching disabled");
 
 for (const path of ["/store", "/store/premium", "/store/proxies", "/store/socials", "/numbers", "/services", "/orders", "/news", "/updates", "/install", "/account", "/account/profile", "/notifications", "/wallet", "/support", "/terms", "/register", "/login", "/admin"]) {
   const content = await (await get(path)).text();
   assert(!starter.test(content), `Starter content found at ${path}.`);
-  assert(content.includes("Digisms Pro"), `Missing application branding at ${path}.`);
+  assert(content.includes("Store OTP"), `Missing application branding at ${path}.`);
   console.log(`PASS ${path}`);
 }
 
@@ -42,4 +42,4 @@ assert(Array.isArray(catalog.announcements));
 assert.equal(typeof catalog.settings?.appName, "string");
 assert(!catalog.products.some(product => "fulfillment" in product), "Private delivery data leaked into the public catalog.");
 console.log(`PASS working catalog API (${catalog.products.length} published products)`);
-console.log(`DIGISMS PRO PREVIEW VERIFIED: ${base}`);
+console.log(`STORE OTP PREVIEW VERIFIED: ${base}`);

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { AppError, apiError, audit, limit, sameOrigin } from "@/lib/server";
 import { loadPopups, savePopups } from "@/lib/popups";
-import { POPUP_IMAGE_MAX_CHARS, POPUP_IMAGE_PATTERN, POPUP_LIMIT, safePopupLink, type Popup } from "@/lib/popup-core";
+import { POPUP_IMAGE_MAX_CHARS, POPUP_IMAGE_PATTERN, POPUP_LIMIT, safeDownloadPath, safePopupLink, type Popup } from "@/lib/popup-core";
 export const dynamic = "force-dynamic";
 export async function GET() { try { await requireAdmin(); return Response.json({ popups: await loadPopups() }); } catch (e) { return apiError(e); } }
 const date = z.string().datetime({ offset: true }).or(z.literal("")).nullish().transform(v => v || null);
@@ -14,6 +14,8 @@ const input = z.object({
   buttonLabel: z.string().trim().max(30).default("Close"),
   linkUrl: z.string().trim().max(300).default("").refine(v => v === "" || safePopupLink(v) !== null, "Use a path inside the app (like /gift) or a full https:// link."),
   linkLabel: z.string().trim().max(30).default(""),
+  downloadUrl: z.string().trim().max(150).default("").refine(v => v === "" || safeDownloadPath(v), "Use a file path inside the app, like /store-otp.apk."),
+  downloadLabel: z.string().trim().max(30).default(""),
   active: z.boolean().default(true), frequency: z.enum(["session", "once"]).default("session"), startsAt: date, endsAt: date,
 }).refine(v => !v.startsAt || !v.endsAt || new Date(v.endsAt) > new Date(v.startsAt), { message: "The end date must be after the start date.", path: ["endsAt"] });
 export async function POST(request: Request) {

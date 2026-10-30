@@ -1,4 +1,4 @@
--- Digisms Pro: fresh Supabase project setup. Run once in the SQL Editor.
+-- Store OTP: fresh Supabase project setup. Run once in the SQL Editor.
 -- Never expose DATABASE_URL or the service-role key in a client bundle.
 -- App access is through server-side Drizzle and its own signed-in session checks.
 

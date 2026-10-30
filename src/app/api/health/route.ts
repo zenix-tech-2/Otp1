@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
-  const headers = { "Cache-Control": "private, no-store, max-age=0", "X-Digisms-Release": APP_RELEASE };
+  const headers = { "Cache-Control": "private, no-store, max-age=0", "X-StoreOTP-Release": APP_RELEASE };
   try {
     // LIMIT 0 verifies each application's table AND its current columns without
     // reading customer, payment, credential, or inventory records into the probe.

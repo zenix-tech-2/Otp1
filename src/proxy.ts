@@ -3,7 +3,18 @@ import { customerRoutes, safeReturnTo } from "./lib/navigation";
 import { normalizeCategorySlug } from "./lib/categories";
 
 // Compatibility only. Actual authentication stays in server-side route handlers.
+// Dedicated admin host. Visiting https://adminotp.sellizi.store opens the admin panel directly.
+// Override with ADMIN_HOST in the environment. Set ADMIN_HOST_ONLY=1 to hide /admin on every other host.
+const ADMIN_HOST = (process.env.ADMIN_HOST || "adminotp.sellizi.store").toLowerCase();
+const hostOf = (request: NextRequest) => (request.headers.get("x-forwarded-host") || request.headers.get("host") || "").split(",")[0].trim().toLowerCase().replace(/:\d+$/, "");
 export function proxy(request: NextRequest) {
+  const host = hostOf(request); const path = request.nextUrl.pathname; const isAdminPath = path === "/admin" || path.startsWith("/admin/");
+  if (host === ADMIN_HOST) {
+    if (path === "/") { const url = request.nextUrl.clone(); url.pathname = "/admin"; return NextResponse.rewrite(url); }
+    if (!isAdminPath && ["GET", "HEAD"].includes(request.method)) { const url = request.nextUrl.clone(); url.pathname = "/"; url.search = ""; return NextResponse.redirect(url, 307); }
+    return NextResponse.next();
+  }
+  if (process.env.ADMIN_HOST_ONLY === "1" && isAdminPath) return new NextResponse("Not found", { status: 404 });
   if (!["GET", "HEAD"].includes(request.method)) return NextResponse.next();
   const url = request.nextUrl.clone(); const params = url.searchParams; const panel = params.get("panel");
   if (panel && customerRoutes[panel]) {
@@ -30,4 +41,4 @@ export function proxy(request: NextRequest) {
   if (oldProduct && params.get("checkout") === "1") { params.delete("checkout"); url.pathname = `/store/product/${oldProduct[1]}/checkout`; return NextResponse.redirect(url, 307); }
   return NextResponse.next();
 }
-export const config = { matcher: ["/", "/store/:path*", "/account/:path*", "/notifications", "/wallet/:path*", "/support", "/terms", "/login", "/register", "/orders/:path*", "/numbers", "/services", "/news/:path*", "/updates/:path*", "/install", "/admin/:path*"] };
+export const config = { matcher: ["/((?!api/|_next/|icons/|images/|screenshots/|brands/|fonts/|widgets/|.*\\..*).*)", "/", "/store/:path*", "/account/:path*", "/notifications", "/wallet/:path*", "/support", "/terms", "/login", "/register", "/orders/:path*", "/numbers", "/services", "/news/:path*", "/updates/:path*", "/install", "/admin/:path*"] };

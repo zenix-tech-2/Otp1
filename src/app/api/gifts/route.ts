@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const { email } = z.object({ email: z.string().trim().toLowerCase().email().max(200) }).parse(await request.json());
     if (email === user.email.toLowerCase()) throw new AppError("That’s your own email. Buy it normally to keep it for yourself.");
     const [target] = await db.select({ name: users.name, suspended: users.suspended, isDemo: users.isDemo }).from(users).where(eq(users.email, email));
-    if (!target || target.suspended || target.isDemo !== user.isDemo) throw new AppError("We couldn’t find a Digisms Pro account with that email. Ask them to sign up first.", 404);
+    if (!target || target.suspended || target.isDemo !== user.isDemo) throw new AppError("We couldn’t find a Store OTP account with that email. Ask them to sign up first.", 404);
     return Response.json({ name: maskedName(target.name) });
   } catch (e) { return apiError(e); }
 }

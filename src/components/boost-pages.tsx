@@ -10,7 +10,7 @@ import { api, useMoney, useStore } from "./app-provider";
 import { BrandIcon, EmptyState, InlineError, Loading, Spinner } from "./ui";
 
 const FLOW = "/boost/new";
-const PROVIDER_KEY = "digisms:boost-provider";
+const PROVIDER_KEY = "storeotp:boost-provider";
 const FIRST_PLATFORMS = 24;
 
 export function PlatformIcon({ id, size = 44 }: { id: string; size?: number }) {

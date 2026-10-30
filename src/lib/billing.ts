@@ -7,6 +7,12 @@ import { and, eq, isNull, lt, or, sql } from "drizzle-orm";
 import { AppError } from "./server";
 import { record, unwrap } from "./numberotp";
 export async function refundOrder(id: string, reason: string, allowCompleted = false) {
+  const before = await db.select({ status: orders.status }).from(orders).where(eq(orders.id, id)).then(r => r[0]?.status);
+  const updated = await refundOrderInner(id, reason, allowCompleted);
+  if (before && before !== "refunded" && updated.status === "refunded") await notifyUser(updated.userId, { kind: "wallet", title: "Refund issued", body: `${updated.title.replace(/^Gift: /, "")} was refunded to your wallet.`, url: `/orders/${updated.id}` });
+  return updated;
+}
+async function refundOrderInner(id: string, reason: string, allowCompleted = false) {
   return db.transaction(async tx => {
     const [order] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
     if (!order) throw new AppError("Order not found.", 404);
@@ -64,6 +70,7 @@ export async function applyActivationUpdate(id: string, payload: unknown) {
   const [before] = await db.select({ status: activations.status }).from(activations).where(eq(activations.id, id));
   const act = await applyActivationInner(id, payload);
   if (before && before.status !== act.status && act.status === "received") await notifyUser(act.userId, { kind: "number", title: "Your code has arrived", body: `A verification code for ${act.serviceName} is ready.`, url: "/numbers" });
+  else if (before && before.status !== act.status && ["expired", "cancelled", "refunded"].includes(act.status)) await notifyUser(act.userId, { kind: "number", title: act.status === "expired" ? "Number expired" : "Number cancelled", body: `No code arrived for ${act.serviceName}. Any charge is returned to your wallet.`, url: "/numbers" });
   return act;
 }
 
@@ -75,15 +82,19 @@ export async function applyRentalUpdate(id: string, payload: unknown) {
   const history = Array.isArray(data.smsHistory) ? data.smsHistory : Array.isArray(data.sms_history) ? data.sms_history : Array.isArray(data.sms) ? data.sms : [];
   const messages = history.map(item => { const r = record(item); return { code: String(r.code ?? "").slice(0, 100), text: String(r.text ?? r.message ?? "").slice(0, 4000), receivedAt: String(r.receivedAt ?? r.received_at ?? new Date().toISOString()) }; }).filter(m => m.code || m.text).slice(-200);
   const expiry = new Date(String(data.expiresAt ?? data.expires_at ?? ""));
-  return db.transaction(async tx => {
+  let fresh = 0;
+  const result = await db.transaction(async tx => {
     const [rental] = await tx.select().from(rentals).where(eq(rentals.id, id)).for("update");
     if (!rental) throw new AppError("Rental not found.", 404);
     if (["refunded", "cancelled"].includes(rental.status)) return rental;
     const expiresAt = Number.isFinite(expiry.getTime()) ? expiry : rental.expiresAt;
     const ended = ["expired", "cancel", "finish", "complete", "ended"].some(word => status.includes(word)) || expiresAt.getTime() <= Date.now();
+    fresh = messages.length > rental.messages.length ? messages.length - rental.messages.length : 0;
     const [updated] = await tx.update(rentals).set({ status: ended ? "expired" : "active", expiresAt, messages: messages.length >= rental.messages.length ? messages : rental.messages, lastPolledAt: new Date() }).where(eq(rentals.id, id)).returning();
     return updated;
   });
+  if (fresh > 0) await notifyUser(result.userId, { kind: "number", title: fresh > 1 ? `${fresh} new SMS messages` : "New SMS received", body: `A message arrived on your rented ${result.serviceName} number.`, url: "/numbers?tab=rentals" });
+  return result;
 }
 
 /**

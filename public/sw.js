@@ -1,11 +1,11 @@
-/* Digisms Pro service worker (plain JavaScript, no external scripts, so it works under the strict
+/* Store OTP service worker (plain JavaScript, no external scripts, so it works under the strict
    `script-src 'self'` policy set for /sw.js in next.config.ts).
 
    Privacy rule: only PUBLIC bundled assets are cached. Account pages, API data, OTPs, wallets,
    purchases, uploads, signed download URLs and payment requests are NEVER cached or queued. */
 const VERSION = 'v3';
-const CACHE = 'digisms-pro-public-assets-' + VERSION;
-const PREFIX = 'digisms-pro-public-assets-';
+const CACHE = 'store-otp-public-assets-' + VERSION;
+const PREFIX = 'store-otp-public-assets-';
 const OFFLINE = '/offline.html';
 const ESSENTIALS = [OFFLINE, '/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/maskable-512.png', '/icons/apple-touch-icon.png', '/fonts/jakarta.woff2'];
 const MAX_ENTRIES = 160;
@@ -34,7 +34,7 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin || url.pathname.startsWith('/api/') || request.headers.has('range') || request.headers.get('rsc') === '1') return;
+  if (url.origin !== self.location.origin || url.pathname.startsWith('/api/') || /\.(apk|aab)$/i.test(url.pathname) || request.headers.has('range') || request.headers.get('rsc') === '1') return;
 
   // Pages: network first (always the latest store), offline page when there is no connection.
   if (request.mode === 'navigate') {
@@ -45,7 +45,7 @@ self.addEventListener('fetch', event => {
         return await fetch(request);
       } catch (error) {
         const cache = await caches.open(CACHE);
-        return (await cache.match(OFFLINE)) || new Response('You are offline. Reconnect to use Digisms Pro.', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+        return (await cache.match(OFFLINE)) || new Response('You are offline. Reconnect to use Store OTP.', { status: 503, headers: { 'Content-Type': 'text/plain' } });
       }
     })());
     return;
@@ -79,12 +79,12 @@ self.addEventListener('fetch', event => {
 self.addEventListener('push', event => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch (e) { data = { body: event.data ? event.data.text() : '' }; }
-  const title = data.title || 'Digisms Pro';
+  const title = data.title || 'Store OTP';
   const options = {
     body: data.body || 'You have a new update.',
     icon: data.icon || '/icons/icon-192.png',
     badge: data.badge || '/icons/monochrome-96.png',
-    tag: data.tag || 'digisms-pro',
+    tag: data.tag || 'store-otp',
     data: { url: typeof data.url === 'string' ? data.url : '/notifications' },
   };
   event.waitUntil((async () => {
@@ -120,7 +120,7 @@ self.addEventListener('pushsubscriptionchange', event => {
 // Benign by design: when the connection returns, open windows are told to refresh public data.
 // Payments, purchases and uploads are never queued here.
 self.addEventListener('sync', event => {
-  if (event.tag === 'digisms-refresh') {
+  if (event.tag === 'storeotp-refresh') {
     event.waitUntil((async () => {
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       windows.forEach(client => client.postMessage({ type: 'BACKGROUND_SYNC', tag: event.tag }));
@@ -131,7 +131,7 @@ self.addEventListener('sync', event => {
 /* ---------- periodic background sync ---------- */
 // Keeps the offline page and core icons fresh. No account data is fetched.
 self.addEventListener('periodicsync', event => {
-  if (event.tag === 'digisms-content-refresh') {
+  if (event.tag === 'storeotp-content-refresh') {
     event.waitUntil((async () => {
       const cache = await caches.open(CACHE);
       await Promise.all(ESSENTIALS.map(async path => { try { const r = await fetch(path, { cache: 'reload' }); if (r.ok) await cache.put(path, r); } catch (e) { /* offline: keep old copy */ } }));
@@ -151,7 +151,7 @@ self.addEventListener('widgetinstall', event => event.waitUntil(renderWidget(eve
 self.addEventListener('widgetresume', event => event.waitUntil(renderWidget(event.widget).catch(() => {})));
 self.addEventListener('widgetclick', event => event.waitUntil(renderWidget(event.widget).catch(() => {})));
 self.addEventListener('periodicsync', event => {
-  if (event.tag === 'digisms-updates' && self.widgets) {
-    event.waitUntil((async () => { const widget = await self.widgets.getByTag('digisms-updates'); await renderWidget(widget); })().catch(() => {}));
+  if (event.tag === 'storeotp-updates' && self.widgets) {
+    event.waitUntil((async () => { const widget = await self.widgets.getByTag('storeotp-updates'); await renderWidget(widget); })().catch(() => {}));
   }
 });

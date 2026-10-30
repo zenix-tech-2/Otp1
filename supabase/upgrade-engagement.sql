@@ -1,4 +1,4 @@
--- Digisms Pro engagement upgrade: live notifications + web push, coupons, gifting, social "account age".
+-- Store OTP engagement upgrade: live notifications + web push, coupons, gifting, social "account age".
 -- Run ONCE on an existing database. Skip it if you installed from the updated fresh-install schema.sql or used `npx drizzle-kit push`.
 -- Back up first.
 BEGIN;

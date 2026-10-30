@@ -12,7 +12,7 @@ A provider service with no known brand mapping uses a bundled generic icon rathe
 
 ### Create a complete download
 
-Run `node scripts/export-project.mjs`. It creates **`exports/digisms-pro-source.zip`** and verifies that the app icons, brand icons, font, artwork, PWA files, schema, and source code are included. The archive excludes `.env`, secret files, node_modules, build caches, and customer data.
+Run `node scripts/export-project.mjs`. It creates **`exports/store-otp-source.zip`** and verifies that the app icons, brand icons, font, artwork, PWA files, schema, and source code are included. The archive excludes `.env`, secret files, node_modules, build caches, and customer data.
 
 Run `node scripts/check-assets.mjs` to validate every embedded logo and the PWA icon dimensions. `scripts/bundle-assets.mjs` can optionally regenerate assets; normal builds/deployments do not fetch icons from the internet.
 

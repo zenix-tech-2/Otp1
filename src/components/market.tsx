@@ -13,7 +13,7 @@ import { categoryIcon } from "./services-sheet";
 import { BrandIcon, EmptyState } from "./ui";
 
 const PAGE_SIZE = 24;
-const SAVED_KEY = "digisms:saved-products";
+const SAVED_KEY = "storeotp:saved-products";
 const sorts = [["featured", "Featured first"], ["price-low", "Price: low to high"], ["price-high", "Price: high to low"], ["name", "Name: A to Z"], ["age", "Oldest accounts first"]] as const;
 const isInstant = (p: Pick<PublicProduct, "metadata">) => p.metadata.deliveryMode !== "manual";
 function metaLine(p: PublicProduct, categoryName: string) {
