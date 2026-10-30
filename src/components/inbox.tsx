@@ -77,7 +77,9 @@ export function usePushToggle() {
   const enable = useCallback(async () => {
     if (!publicKey) return; setBusy(true);
     try {
-      const permission = await Notification.requestPermission(); if (permission !== "granted") { setState(permission === "denied" ? "blocked" : "off"); return; }
+      const asked = await Promise.race([Notification.requestPermission(), new Promise<"timeout">(r => window.setTimeout(() => r("timeout"), 12000))]);
+      const permission = asked === "timeout" ? Notification.permission : asked;
+      if (permission !== "granted") { setState(permission === "denied" || asked === "timeout" ? "blocked" : "off"); if (asked === "timeout" || permission === "denied") notify("Notifications are blocked for this app. Turn them on in your phone’s settings, then try again.", "error"); return; }
       await subscribeThisDevice(publicKey); setState("on"); notify("Push notifications are on for this device.");
     } catch (e) { notify((e as Error).message || "We couldn’t turn on notifications on this device.", "error"); } finally { setBusy(false); }
   }, [publicKey, notify]);
@@ -116,7 +118,7 @@ const ASK_KEY = "storeotp:push-ask";
 export function PushPrompt() {
   const { user } = useStore(); const { state, busy, enable } = usePushToggle(); const [show, setShow] = useState(false);
   useEffect(() => {
-    if (!user || state !== "off") { setShow(false); return; }
+    if (!user || state !== "off" || (typeof Notification !== "undefined" && Notification.permission === "denied")) { setShow(false); return; }
     let snoozed = false; try { snoozed = Date.now() < Number(localStorage.getItem(ASK_KEY) || 0); } catch { /* storage unavailable: ask anyway */ }
     if (snoozed) return; const timer = window.setTimeout(() => setShow(true), 5000); return () => window.clearTimeout(timer);
   }, [user, state]);
