@@ -1,0 +1,51 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ArrowRight, Bell, Bot, TrendingUp, ChevronRight, CircleHelp, Download, Gift, Mail, Megaphone, Phone, Sparkles, WifiOff, Globe2, Home, Layers3, Menu, Package, Plus, Settings, ShieldCheck, ShoppingBag, Smartphone, UserRound, Wallet, X } from "lucide-react";
+import { useStore, useMoney } from "./app-provider";
+import { categoryHref } from "@/lib/categories";
+import { AiChat } from "./ai-chat";
+import { ThemeToggle } from "./theme";
+import { PushPrompt, useInbox } from "./inbox";
+import {usePwa} from "./pwa-provider";
+import { Logo } from "./ui";
+import { ServicesSheet } from "./services-sheet";
+import { PopupNotices } from "./popup-notice";
+const navigation = [
+  { label: "Home", href: "/", icon: Home }, { label: "Numbers", href: "/numbers", icon: Smartphone },
+  { label: "Store", href: "/store", icon: ShoppingBag }, { label: "Categories", href: "/services", icon: Layers3 },
+  { label: "Account", href: "/account", icon: UserRound },
+];
+// The top bar keeps its original order and gains Boost; the phone bar keeps five tabs and "Services" opens the services sheet.
+const desktopNavigation = [navigation[0], navigation[1], { label: "Boost", href: "/boost", icon: TrendingUp }, navigation[2], navigation[3], navigation[4]];
+function active(pathname: string, href: string) { return href === "/" ? pathname === "/" : href === "/account" ? ["/account", "/wallet", "/notifications", "/support", "/login", "/register"].some(path => pathname === path || pathname.startsWith(path + "/")) : pathname === href || pathname.startsWith(href + "/"); }
+export function AppShell({ children }: { children: ReactNode }) {
+  const { online } = usePwa(); const { money } = useMoney(); const pathname = usePathname();
+  const { user, openPanel, panel, demo, settings, pricing, refreshAccount, notify, announcements } = useStore(); const { unread } = useInbox();
+  const bare = pathname === "/mail" || pathname === "/temp-numbers"; const [servicesOpen, setServicesOpen] = useState(false); /* /mail and /temp-numbers are full-screen app-style pages with their own bars */
+  useEffect(() => { setServicesOpen(false); }, [pathname]);
+  return <>{!bare && <><header className="site-header"><div className="header-inner">
+    <button className="icon-button menu-toggle" aria-label="Open navigation drawer" onClick={() => openPanel("menu")}><Menu size={23}/></button><Logo/>
+    <nav className="desktop-navigation" aria-label="Main navigation">{desktopNavigation.map(n => <Link key={n.href} href={n.href} className={active(pathname,n.href) ? "nav-active" : ""} aria-current={active(pathname,n.href) ? "page" : undefined}>{n.label}</Link>)}</nav>
+    <div className="header-actions"><Link className="wallet-button" href="/wallet" aria-label="Open your wallet"><Wallet size={18}/><span><small>Wallet balance</small><strong>{money(user?.balance || 0)}</strong></span><span className="wallet-plus"><Plus size={14}/></span></Link><span className="header-divider"/>
+    <button type="button" className="icon-button ai-header-button" aria-label="Ask Store OTP AI" title="Ask Store OTP AI" onClick={() => window.dispatchEvent(new Event("storeotp:open-assistant"))}><Bot size={20}/></button>
+    <ThemeToggle/>
+    <Link className={`icon-button notification-button ${unread > 0 ? "has-unread" : ""}`} href="/notifications" aria-label={unread > 0 ? `Open notifications, ${unread} unread` : "Open notifications"}><Bell size={21}/>{unread > 0 ? <span className="notification-badge">{unread > 9 ? "9+" : unread}</span> : announcements.length > 0 && <span className="notification-dot"/>}</Link>
+    <Link className="profile-button" href="/account" aria-label="Open your account"><UserRound size={23}/></Link></div>
+  </div></header>{settings.maintenance && <div className="maintenance-strip">We’re making a few improvements. Browsing and order tracking are still available.</div>}{user && user.currency !== "USD" && !pricing && <div className="currency-availability-strip"><ShieldCheck size={15}/><span>Your {user.currency} wallet is safe. Local price conversion is temporarily unavailable.</span><button onClick={() => refreshAccount().catch(() => notify("Rates are still unavailable. Please try again shortly.","error"))}>Retry<ArrowRight size={12}/></button></div>}</>}
+  {!online&&<div className="offline-connection-bar"><WifiOff size={15}/>You’re offline. Reconnect before making a purchase, payment, or account change.</div>}
+  {children}
+  {!bare && <><footer className="site-footer"><div><Logo/><p>{settings.announcement || "Your digital world. A little simpler."}</p></div><div className="footer-right"><div className="footer-links"><Link href="/support">Help & support</Link><Link href="/news">News</Link><Link href="/updates">App updates</Link><Link href="/install">Install app</Link><Link href="/terms">Privacy & terms</Link></div><p>© {new Date().getFullYear()} {settings.appName}. All rights reserved.{demo && <span className="demo-footer">Sandbox preview</span>}</p>{pricing?.source === "exchange-rate-api" && <a className="fx-attribution" href="https://www.exchangerate-api.com" target="_blank" rel="noreferrer">Rates by ExchangeRate-API</a>}</div></footer>
+  <nav className="mobile-navigation" aria-label="Mobile navigation">{navigation.map(n => n.href === "/services" ? <button key={n.href} type="button" className={servicesOpen || active(pathname,n.href) ? "mobile-nav-active" : ""} aria-haspopup="dialog" aria-expanded={servicesOpen} onClick={() => setServicesOpen(true)}><n.icon size={21}/><span>Services</span></button> : <Link key={n.href} href={n.href} className={active(pathname,n.href) ? "mobile-nav-active" : ""} aria-current={active(pathname,n.href) ? "page" : undefined}><n.icon size={21}/><span>{n.label}</span></Link>)}</nav></>}
+  {panel === "menu" && <Drawer/>}{servicesOpen && <ServicesSheet onClose={() => setServicesOpen(false)}/>}{!bare && <AiChat/>}<PopupNotices/><PushPrompt/></>;
+}
+function Drawer() {
+  const { money } = useMoney(); const { closePanel, user, categories } = useStore(); const pathname = usePathname(); const ref = useRef<HTMLElement>(null);
+  useEffect(() => { const previous = document.activeElement as HTMLElement | null; const overflow = document.body.style.overflow; document.body.style.overflow = "hidden"; ref.current?.focus(); const element = ref.current; const key = (event: KeyboardEvent) => { if(event.key !== "Tab") return; const items=Array.from(element?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled)') || []); const first=items[0]; const last=items[items.length-1]; if(event.shiftKey && (document.activeElement===first || document.activeElement===element)){event.preventDefault();last?.focus();}else if(!event.shiftKey && (document.activeElement===last || document.activeElement===element)){event.preventDefault();first?.focus();} }; element?.addEventListener("keydown",key); return()=>{document.body.style.overflow=overflow;element?.removeEventListener("keydown",key);previous?.focus();}; },[]);
+  return <div className="drawer-scrim" onClick={closePanel}><aside className="navigation-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu" onClick={e=>e.stopPropagation()} ref={ref} tabIndex={-1}>
+  <div className="drawer-header"><Logo/><button className="icon-button" aria-label="Close menu" onClick={closePanel}><X size={21}/></button></div><Link href="/account" className="drawer-welcome"><span className="profile-button"><UserRound size={23}/></span><div><small>Your digital world awaits</small><strong>Hello, {user?.name.split(" ")[0] || "there"} 👋</strong></div><ChevronRight size={15}/></Link>
+  <span className="drawer-label">EXPLORE STORE OTP</span><nav className="drawer-links">{navigation.filter(n=>n.href!=="/account").map(n=><Link key={n.href} href={n.href} className={active(pathname,n.href)?"drawer-active":""}><n.icon size={20}/><span>{n.label==="Numbers"?"Virtual numbers":n.label==="Store"?"All products":n.label==="Categories"?"Browse all categories":n.label}</span><ChevronRight size={15}/></Link>)}<Link href="/boost" className={active(pathname,"/boost")?"drawer-active":""}><TrendingUp size={20}/><span>Boost your socials</span><ChevronRight size={15}/></Link><Link href="/gift" className={active(pathname,"/gift")?"drawer-active":""}><Gift size={20}/><span>Send a gift</span><ChevronRight size={15}/></Link><Link href="/mail" className={active(pathname,"/mail")?"drawer-active":""}><Mail size={20}/><span>Temp mail</span><ChevronRight size={15}/></Link><Link href="/temp-numbers" className={active(pathname,"/temp-numbers")?"drawer-active":""}><Phone size={20}/><span>Temp numbers</span><ChevronRight size={15}/></Link></nav>
+  {categories.some(c=>c.kind==="products"||c.kind==="development")&&<><span className="drawer-label">DISCOVER MORE</span><nav className="drawer-links drawer-category-links">{categories.filter(c=>c.kind==="products"||c.kind==="development").map(c=><Link key={c.id} href={categoryHref(c)}><span className={`drawer-category-dot dot-${c.color}`}/><span>{c.name}</span><ChevronRight size={14}/></Link>)}</nav></>}
+  <span className="drawer-label">YOUR SPACE</span><nav className="drawer-links"><Link href="/account"><UserRound size={20}/><span>My account</span></Link><Link href="/orders"><Package size={20}/><span>My purchases</span></Link><Link href="/wallet"><Wallet size={20}/><span>My wallet</span><strong>{money(user?.balance || 0)}</strong></Link><Link href="/notifications"><Bell size={20}/><span>Notifications</span></Link><Link href="/news"><Megaphone size={20}/><span>News</span></Link><Link href="/updates"><Sparkles size={20}/><span>App updates</span></Link><Link href="/install"><Download size={20}/><span>Install app</span></Link><button type="button" className="drawer-ai-button" onClick={()=>{closePanel();window.dispatchEvent(new Event("storeotp:open-assistant"));}}><Sparkles size={20}/><span>Ask Store OTP AI</span></button><Link href="/support"><CircleHelp size={20}/><span>Help & support</span></Link></nav><div className="drawer-bottom"><span className="drawer-trust"><ShieldCheck size={18}/>A safer digital experience</span><p>Made for your everyday digital life.</p></div></aside></div>;
+}

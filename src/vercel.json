@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "crons": [
+    { "path": "/api/cron/reconcile", "schedule": "0 0 * * *" }
+  ]
+}
