@@ -119,3 +119,13 @@
 .tn-msg{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:18px;background:var(--tm-surface);border:1px solid var(--tm-line)}
 .tn-text{font-size:15px;line-height:1.5;color:var(--tm-text);overflow-wrap:anywhere;white-space:pre-wrap}
 .tn-code{justify-self:start;display:inline-flex;align-items:center;gap:6px;margin-top:4px;border:0;border-radius:10px;background:var(--tm-ok-soft);color:var(--tm-ok-text);font-weight:700;font-size:13px;padding:6px 12px}
+/* Keep very long sender addresses and subjects inside the screen. */
+.tm-msgs,.tm-msgs>li{min-width:0;max-width:100%}
+.tm-msg{min-width:0;max-width:100%;overflow:hidden}
+.tm-msg-main{grid-template-columns:minmax(0,1fr)}
+.tm-msg-top{min-width:0}
+.tm-msg-top strong,.tm-msg-subject{min-width:0;max-width:100%}
+.tm-r-from>div{grid-template-columns:minmax(0,1fr)}
+.tm-r-from strong,.tm-r-from small{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+.tm-r-from strong{white-space:normal}
+.tm-addr-main strong{min-width:0;overflow-wrap:anywhere}

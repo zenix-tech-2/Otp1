@@ -10,6 +10,13 @@ import { providerRequest } from "./numberotp";
 import type { MessageSummary } from "./tempmail-core";
 
 const key = (boxId: string) => `mailseen:${boxId}`;
+/** A short, readable sender for a notification. Bounce addresses like "bounces+123-abc=site.com@mail.example.com" become "example.com". */
+function senderLabel(m: Pick<MessageSummary, "fromName" | "from">) {
+  const name = (m.fromName || "").trim(); if (name) return name.slice(0, 60);
+  const addr = (m.from || "").trim(); const at = addr.lastIndexOf("@"); if (at < 1) return addr.slice(0, 60) || "New email";
+  const local = addr.slice(0, at); const base = addr.slice(at + 1).split(".").slice(-2).join(".");
+  return (/^[a-z0-9._-]{1,24}$/i.test(local) ? `${local}@${base}` : base).slice(0, 60);
+}
 /**
  * Sends a notification for every email that is new since the last look.
  * The first look at a mailbox only records what is already there, so old mail never triggers an alert.
@@ -25,7 +32,7 @@ export async function alertNewMail(box: Pick<TempMailbox, "id" | "userId" | "add
     const first = fresh[0];
     await notifyUser(box.userId, {
       kind: "mail",
-      title: fresh.length > 1 ? `${fresh.length} new emails` : (first.fromName || first.from || "New email"),
+      title: fresh.length > 1 ? `${fresh.length} new emails` : senderLabel(first),
       body: fresh.length > 1 ? `New mail in ${box.address}` : `${first.subject || "(no subject)"}${first.code ? ` · Code ${first.code}` : ""}`,
       url: "/mail",
     });

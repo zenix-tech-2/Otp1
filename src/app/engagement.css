@@ -40,3 +40,8 @@
 .coupon-list{display:grid;gap:10px}.coupon-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #e8edf5;border-radius:14px;background:#fff}.coupon-item>div{flex:1;min-width:0}.coupon-item code{font-weight:800;letter-spacing:.06em;font-size:13px;color:#142344}.coupon-item small{display:block;color:#7b869e;font-size:11px;margin-top:2px}
 .coupon-item.off{opacity:.55}.coupon-actions{display:flex;gap:6px}
 .mk-card-title .age-pill{margin-top:6px}
+/* Long, unbreakable text (bounce addresses, codes, links) must wrap instead of widening the page. */
+html,body{max-width:100%;overflow-x:clip}
+.inbox-list{grid-template-columns:minmax(0,1fr)}
+.inbox-list,.inbox-item,.push-card{min-width:0;max-width:100%}
+.inbox-item strong,.inbox-item p{overflow-wrap:anywhere;word-break:break-word}
