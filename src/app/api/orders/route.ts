@@ -8,7 +8,7 @@ import { getCurrencyQuote } from "@/lib/fx";
 import { fromUsd } from "@/lib/currency";
 import { evaluateCoupon, recordRedemption } from "@/lib/coupons";
 import { after } from "next/server";
-import { notifyAdmins, notifyUser } from "@/lib/notify";
+import { notifyUser } from "@/lib/notify";
 import { GIFT_MESSAGE_MAX, maskedName } from "@/lib/gift-core";
 
 export const dynamic="force-dynamic";
@@ -62,6 +62,5 @@ export async function POST(request:Request){try{
  if(result.giftTo&&"receivedId" in result)await notifyUser(result.giftTo,{kind:"gift",title:`${maskedName(user.name)} sent you a gift`,body:`${result.productName} is ready in your purchases.`,url:`/orders/${result.receivedId}`});
 
  after(()=>notifyUser(user.id,result.giftTo?{kind:"order",title:"Gift sent",body:`Your gift of ${result.order.title.replace(/^Gift: /,"")} was sent.`,url:`/orders/${result.order.id}`}:{kind:"order",title:"Purchase successful",body:result.order.status==="completed"?`${result.order.title} is ready in your purchases.`:`${result.order.title} was received and is being prepared. We\u2019ll alert you when it\u2019s ready.`,url:`/orders/${result.order.id}`}));
- if(!result.giftTo&&result.order.status==="processing")after(()=>notifyAdmins({kind:"order",title:"Order needs fulfilling",body:`${user.name} bought ${result.order.title}.`,url:"/admin?view=orders"}));
  return Response.json({order:result.order});
 }catch(e){return apiError(e);}}

@@ -328,5 +328,5 @@ export const devStatuses: Record<string, { label: string; tone: string; hint: st
 };
 export const devSteps = ["submitted", "reviewing", "quoted", "in_progress", "delivered", "completed"];
 export const devClosed = ["completed", "declined", "cancelled"];
-export type DevMessage = { from: "customer" | "admin"; text: string; at: string };
+export type DevMessage = { from: "customer" | "team"; text: string; at: string };
 export type DevLink = { label: string; url: string };

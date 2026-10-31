@@ -1,7 +1,7 @@
 // Generates src/app/dark.generated.css: a dark counterpart for every colour rule in the app's stylesheets.
 // Re-run `npm run dark` after you change colours in any .css file. Hand-tuned exceptions live in src/app/dark.css.
 import { readFileSync, writeFileSync } from "node:fs";
-const files = ["globals","readability","payments","screens","media","product-forms","pwa","rentals","dev","ai","flows","admin","boost","engagement"].map(n => `src/app/${n}.css`);
+const files = ["globals","readability","payments","screens","media","product-forms","pwa","rentals","dev","ai","flows","boost","engagement"].map(n => `src/app/${n}.css`);
 const SCOPE = '[data-theme="dark"]';
 const SKIP_AT = /^@(keyframes|-webkit-keyframes|font-face|property|page|counter-style)/i;
 // ---- tiny CSS tree parser (handles comments, strings, url(...), nested at-rules) ----

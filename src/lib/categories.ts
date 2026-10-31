@@ -19,7 +19,6 @@ export const categoryTemplates = [
 ];
 export const categoryIcons = ["sim", "social", "server", "crown", "netflix", "gift", "package", "code", "book", "gamepad", "music", "globe", "sparkles", "briefcase", "graduation", "palette"];
 export const categoryColors = ["blue", "violet", "cyan", "gold", "green", "pink"];
-export const reservedCategorySlugs = ["product", "products", "all", "category", "categories", "search", "checkout", "new", "admin", "social", "build"];
 export function categoryHref(category: Pick<StoreCategory, "kind" | "slug">) { return category.kind === "sms" ? "/numbers" : category.kind === "development" ? "/build" : `/store/${encodeURIComponent(category.slug)}`; }
 export function productHref(id: string) { return `/store/product/${encodeURIComponent(id)}`; }
 export function fieldsForCategory(category?: Pick<StoreCategory, "fields" | "formType">) { return category?.fields?.length ? category.fields : categoryFields[category?.formType || "generic"] || categoryFields.generic; }

@@ -7,6 +7,6 @@ VALUES
 ('product-deliveries','product-deliveries',false,262144000,ARRAY['application/vnd.android.package-archive','application/octet-stream','application/zip','application/x-zip-compressed','application/pdf','application/epub+zip','text/plain','image/png','image/jpeg','image/webp','image/gif','video/mp4','video/webm','audio/mpeg','audio/mp4','audio/ogg','audio/wav']),
 ('news-media','news-media',false,157286400,ARRAY['image/png','image/jpeg','image/webp','image/gif','video/mp4','video/webm','audio/mpeg','audio/mp4','audio/ogg','audio/wav','application/pdf','application/zip','text/plain'])
 ON CONFLICT (id) DO UPDATE SET public=EXCLUDED.public,file_size_limit=EXCLUDED.file_size_limit,allowed_mime_types=EXCLUDED.allowed_mime_types;
--- No public upload policies. Signed upload URLs are issued by the admin-only server.
--- news-media is PRIVATE: /api/media/{id} verifies publication or administrator access.
+-- No public upload policies. Signed upload URLs are issued by the server.
+-- news-media is PRIVATE: /api/media/{id} verifies publication.
 -- product-deliveries is PRIVATE: /api/orders/{id}/download verifies ownership and completion.

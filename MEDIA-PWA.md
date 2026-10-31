@@ -63,9 +63,7 @@ A waiting service-worker update is offered on `/install`; it is not force-applie
 
 Posts support a title, short introduction, full story, publication status, a cover image, and **up to 12 ordered media attachments**. Images, MP4/WebM video, audio, PDF/TXT/ZIP attachments, alt text, and captions are supported. Native video/audio controls are used; media does not autoplay.
 
-Admin → News & updates includes create/edit, drafts, media uploads with progress/cancellation, cover selection, attachment ordering/removal, publication, and unpublishing. Notifications link to the individual post instead of displaying the entire story inline. Existing plain-text posts are preserved and get working individual URLs.
 
-Media is checked against a verified upload record; the browser cannot publish an arbitrary unvalidated file URL. News media is in a **private** Storage bucket. `/api/media/{id}` checks whether an active post references the file, or whether the requester is an administrator, before serving it. Draft media is not public. Unpublishing prevents new media requests; already issued short-lived signed URLs can remain valid until expiry.
 
 Only post media types are allowed in articles. Private product APKs cannot be republished as a news attachment through this endpoint.
 
@@ -79,7 +77,6 @@ Supported private files include:
 - PNG/JPG/WebP/GIF images.
 - MP4/WebM video and MP3/M4A/OGG/WAV audio.
 
-Only authenticated administrators can prepare uploads. The server validates the extension, content type, expected byte size, and file signature. APKs arriving from browsers with an empty or generic MIME type are normalized safely to `application/vnd.android.package-archive` after extension validation. This is **file-format validation, not antivirus analysis or Android-signature certification**. Upload only authorized, trusted software; use a malware-scanning pipeline before distributing untrusted third-party applications.
 
 The store never executes APKs or automatically installs them. A customer with a completed purchase receives an authenticated download preserving the original `.apk` filename. Other accounts, anonymous visitors, and refunded orders cannot use that download endpoint.
 
@@ -87,10 +84,8 @@ The store never executes APKs or automatically installs them. A customer with a 
 
 The 4 MB form-post restriction is replaced for configured Storage by a direct signed upload flow:
 
-1. Admin requests `/api/admin/upload` with filename, byte size, MIME type, and destination.
 2. The server validates limits and creates a database upload record plus a Supabase signed upload URL for a server-generated path, with overwrite disabled.
 3. Browser sends the actual file **directly to Supabase** using PUT and reports progress. The service-role key is never sent to the browser.
-4. Browser calls `/api/admin/uploads/{id}/complete`.
 5. Server verifies actual Storage size/content type and reads a small byte prefix for format validation, then marks the record ready.
 6. Only ready files can be published or used for product fulfillment.
 
@@ -119,7 +114,6 @@ Use existing server-only `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
 - Do not apply the equivalent schema upgrade twice.
 
 Buckets:
-- `product-assets`: public images, admin upload only.
 - `product-deliveries`: private purchased files, including APK.
 - `news-media`: private media; publication checks precede short-lived signed reads.
 

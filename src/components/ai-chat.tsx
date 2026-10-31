@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, Headset, ImagePlus, Package, RotateCcw, Send, Sparkles, X } from "lucide-react";
 import type { AssistantResult, ChatCard } from "@/lib/ai-assistant";
@@ -49,11 +48,10 @@ function CardView({ card, onOpen }: { card: ChatCard; onOpen: () => void }) {
 }
 
 export function AiChat() {
-  const { user, openPanel } = useStore(); const pathname = usePathname();
+  const { user, openPanel } = useStore();
   const [open, setOpen] = useState(false); const [messages, setMessages] = useState<ChatMessage[]>([]); const [input, setInput] = useState(""); const [images, setImages] = useState<Attachment[]>([]);
   const [busy, setBusy] = useState(false); const [notice, setNotice] = useState(""); const [enabled, setEnabled] = useState<boolean | null>(null); const [loaded, setLoaded] = useState(false);
   const panel = useRef<HTMLElement>(null); const scroller = useRef<HTMLDivElement>(null); const picker = useRef<HTMLInputElement>(null); const field = useRef<HTMLTextAreaElement>(null); const userId = user?.id || "guest";
-  const admin = pathname === "/admin" || pathname.startsWith("/admin/");
 
   useEffect(() => { const handler = () => setOpen(true); window.addEventListener("storeotp:open-assistant", handler); return () => window.removeEventListener("storeotp:open-assistant", handler); }, []);
   // Restore a recent chat, but never across different accounts on a shared device.
@@ -93,7 +91,6 @@ export function AiChat() {
   function reset() { if (messages.length && !confirm("Start a new chat? This clears the current conversation.")) return; setMessages([]); setImages([]); setInput(""); setNotice(""); }
   function human() { setOpen(false); openPanel("support"); }
 
-  if (admin) return null;
   const lastUserText = [...messages].reverse().find(m => m.role === "user")?.text;
   return <>
     {open && <section ref={panel} className="ai-panel" role="dialog" aria-label="Store OTP AI assistant">

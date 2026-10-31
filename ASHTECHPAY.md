@@ -47,8 +47,6 @@ There is **no hardcoded live country/operator list**. Without configured provide
 - An account wallet is held in its own currency's **integer minor units**. XAF/XOF use whole francs; USD/GHS/NGN/KES use their normal ISO decimal precision.
 - Local product/SMS prices are rounded up to one minor unit using deterministic integer arithmetic.
 - Checkout compares the client-reviewed local amount with a server-computed amount; changed price/rate/currency returns a conflict requiring review.
-- Each order stores its charged `amount`, `currency`, and `base_amount` (USD cents for admin reporting). Receipts, exports, wallet adjustments, and refunds use the recorded currency.
-- Administrative sales totals sum USD equivalents, not mixed XAF/USD/NGN amounts.
 
 ### Exchange-rate source
 
@@ -121,7 +119,6 @@ The **store absorbs Ashtech Pay processing fees**: wallet credit is the agreed g
 - Explicit provider failures/cancellations/expiry add no wallet credit.
 - Network timeouts, 5xx, and ambiguous conflicts stay in reconciliation. The original reference is retained; the app does not create another charge blindly.
 - Missing/mismatched verified details are quarantined; no credit is issued.
-- Admin → Purchases → an Ashtech Pay order includes provider details and **Verify with Ashtech Pay**. An ambiguous request with no transaction ID can be linked to the actual ID from the provider dashboard, but all reference/amount/currency checks still apply.
 - A pending Ashtech payment cannot be credited by the old manual deposit-approval action.
 - `POST /api/account` with `action=topup` returns `410`; the old client-triggered top-up path is removed.
 
@@ -154,7 +151,6 @@ Always use the disposable local demo database, never a real-money database.
    `node --conditions=react-server --import dotenv/config --import tsx scripts/payment-contract.mjs`
 2. Signup, native currency, payment OTP, duplicate-credit, USD fallback, mobile layout, and authorization browser tests against a running sandbox app:
    `PREVIEW_URL=http://127.0.0.1:3000 node --import dotenv/config --import tsx scripts/payment-browser.mjs`
-3. Existing storefront/admin regression suite:
    `PREVIEW_URL=http://127.0.0.1:3000 node --import dotenv/config --import tsx scripts/smoke.mjs`
 
 The mocked tests never send a real payment request. Browser tests create sandbox accounts and records. Screenshots are saved under ignored `tests/screenshots/`.
@@ -174,4 +170,3 @@ Live merchant behavior must be verified with your own activated Ashtech Pay acco
 - https://www.exchangerate-api.com/docs/free
 
 ## Navigation update
-Wallet and payments are full pages at `/wallet` and `/wallet/payments/{id}`. Signup is `/register`, profile is `/account/profile`, and receipts use `/orders/{id}`. Old panel/query links redirect to these routes. For the category schema upgrade and private `/admin` entry, see NAVIGATION.md.

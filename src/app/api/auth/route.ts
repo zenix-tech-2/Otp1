@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { sessions, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { clearSession, createSession, getUser, hashPassword, publicUser, secureEqual, verifyPassword } from "@/lib/auth";
+import { clearSession, createSession, getUser, hashPassword, publicUser, verifyPassword } from "@/lib/auth";
 import { apiError, AppError, audit, getSettings, IS_DEMO, limit, sameOrigin } from "@/lib/server";
 import { resolveSignupCountry } from "@/lib/ashtech";
 import { safeCurrencyQuote } from "@/lib/fx";
@@ -28,15 +28,12 @@ export async function POST(request: Request) {
     const config=await getSettings();let [user]=await db.select().from(users).where(eq(users.email,data.email));
     if(data.action==="register"){
       if(!config.allowRegistrations)throw new AppError("New registrations are temporarily paused.",403);
-      if(process.env.ADMIN_EMAIL&&data.email===process.env.ADMIN_EMAIL.toLowerCase())throw new AppError("This email is reserved. Please sign in with your administrator credentials.",403);
       if(user)throw new AppError("An account with this email already exists. Please sign in.",409);
       const country=await resolveSignupCountry(data.countryCode!);const quote=IS_DEMO?await safeCurrencyQuote(country.currency):null;
       [user]=await db.insert(users).values({name:data.name||data.email.split("@")[0],email:data.email,passwordHash:await hashPassword(data.password),...country,isDemo:IS_DEMO,balance:IS_DEMO&&quote?fromUsd(2500,quote):0}).returning();
       await audit(user.id,"account.created",undefined,{countryCode:country.countryCode,currency:country.currency});
     }else{
-      const adminEmail=process.env.ADMIN_EMAIL?.toLowerCase();const adminPassword=process.env.ADMIN_PASSWORD;
-      if(!user&&adminEmail&&adminPassword&&adminPassword.length>=12&&data.email===adminEmail&&secureEqual(data.password,adminPassword)){[user]=await db.insert(users).values({name:"Store Admin",email:data.email,passwordHash:await hashPassword(data.password),role:"admin",isDemo:IS_DEMO}).returning();}
-      else if(!user||!user.passwordHash||!(await verifyPassword(data.password,user.passwordHash)))throw new AppError("Your email or password is incorrect.",401);
+      if(!user||!user.passwordHash||!(await verifyPassword(data.password,user.passwordHash)))throw new AppError("Your email or password is incorrect.",401);
       if(user.suspended||(!IS_DEMO&&user.isDemo))throw new AppError("This account is not available. Please contact support.",403);
     }
     await createSession(user.id);return Response.json({user:publicUser(user),pricing:await safeCurrencyQuote(user.currency),demo:IS_DEMO});

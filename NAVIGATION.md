@@ -1,4 +1,4 @@
-# Clean routes, private administration, and expandable categories
+# Clean routes and expandable categories
 
 ## Customer navigation
 
@@ -22,7 +22,6 @@ Customer screens are ordinary Next.js pages, not modal overlays. Each can be ope
 | Product | `/store/product/{product-id}` |
 | Checkout | `/store/product/{product-id}/checkout` |
 
-The bottom navigation is **Home · Numbers · Store · Categories · Account**. It is not tied to a short, permanent list of product categories. The menu drawer remains available from the header; it is the only customer navigation overlay. Administrator editing dialogs remain inside the private workspace.
 
 ### Existing links still work
 
@@ -36,19 +35,8 @@ The bottom navigation is **Home · Numbers · Store · Categories · Account**. 
 
 Search and sort options are preserved during category redirects and filter changes. Internal return URLs are validated to prevent external/open redirects. APIs and static assets are not rewritten by the compatibility proxy.
 
-## Administrator access
-
-The administrator entry is **`/admin`**, including `https://sms-digitals-one.vercel.app/admin` on your deployment.
-
-There are **no administrator links** in the customer footer, drawer, account page, header, or bottom navigation—even when the signed-in account is an admin. Open `/admin` directly.
-
-Hiding links is not the security boundary. Every admin API still checks the server-side user role. Public sandbox accounts no longer receive automatic administrator access. Both live and sandbox workspaces require an account with `role=admin`.
-
-Use the existing `ADMIN_EMAIL` and strong `ADMIN_PASSWORD` environment variables to bootstrap your administrator on its first successful login. Existing administrator accounts continue using their stored password hashes. Never share admin credentials with ordinary users.
-
 ## Add future categories without changing code
 
-In **Admin → Categories**, create or edit:
 - Category name and stable URL slug.
 - Short card description and page introduction.
 - Icon or uploaded image, card color, and display order.
@@ -79,7 +67,6 @@ Run only against a disposable local sandbox database:
 - `node --import dotenv/config --import tsx scripts/smoke.mjs`
 - `node --import dotenv/config --import tsx scripts/payment-browser.mjs`
 
-The browser tests use a temporary administrator created by `scripts/admin-fixture.ts`, which refuses non-local databases and live mode. This test-only fixture never enables public admin access and cleans up its administrator session/account. Test listings/categories are archived after use.
 
 The read-only deployment check remains:
 

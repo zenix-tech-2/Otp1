@@ -90,9 +90,32 @@ export function usePushToggle() {
   }, [notify]);
   return { state, busy, enable, disable };
 }
+function PushDiagnostics() {
+  const [rows, setRows] = useState<[string, string][]>([]);
+  useEffect(() => {
+    (async () => {
+      const ua = navigator.userAgent; let server = "unknown";
+      try { const r = await api<{ configured: boolean; devices: number }>("/api/push"); server = r.configured ? `keys set, ${r.devices} device(s) saved` : "VAPID keys missing on server"; } catch { server = "not reachable / not signed in"; }
+      const ok = (v: boolean) => v ? "yes" : "NO";
+      setRows([
+        ["Site address", location.origin],
+        ["Secure (https)", ok(window.isSecureContext)],
+        ["Service worker support", ok("serviceWorker" in navigator)],
+        ["PushManager (web push)", ok("PushManager" in window)],
+        ["Notification API", ok("Notification" in window)],
+        ["Permission", "Notification" in window ? Notification.permission : "n/a"],
+        ["Running as WebView", /; wv\)|Version\/[\d.]+ Chrome/.test(ua) ? "YES (push cannot work here)" : "no"],
+        ["Installed/standalone", ok(window.matchMedia("(display-mode: standalone)").matches)],
+        ["Server push", server],
+      ]);
+    })();
+  }, []);
+  return <details className="push-diag"><summary>Notification diagnostics</summary><dl>{rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></details>;
+}
 export function PushCard() {
   const { state, busy, enable, disable } = usePushToggle();
-  if (state === "loading" || state === "unconfigured") return null;
+  if (state === "loading") return null;
+  if (state === "unconfigured") return <div className="push-card push-unsupported"><span className="push-card-icon"><BellOff size={22} /></span><div><strong>Push isn’t set up on the server</strong><p>The store owner still needs to add the push keys.</p></div><PushDiagnostics /></div>;
   const copy: Record<Exclude<PushState, "loading" | "unconfigured">, { title: string; text: string }> = {
     on: { title: "Push notifications are on", text: "We’ll alert this device about purchases, SMS codes, new emails, news, gifts and wallet activity, even when the app is closed." },
     off: { title: "Get alerts the moment things happen", text: "Turn on push notifications for purchases, SMS codes, new emails, news, updates, gifts and wallet top-ups." },
@@ -101,7 +124,7 @@ export function PushCard() {
     "ios-install": { title: "Install the app to get push on iPhone", text: "On iPhone and iPad, push works after you tap Share → Add to Home Screen and open Store OTP from there." },
   };
   const c = copy[state];
-  return <div className={`push-card push-${state}`}><span className="push-card-icon">{state === "on" ? <BellRing size={22} /> : state === "off" ? <Bell size={22} /> : <BellOff size={22} />}</span><div><strong>{c.title}</strong><p>{c.text}</p></div>{(state === "on" || state === "off") && <button className={`button ${state === "on" ? "button-secondary" : "button-primary"} button-small`} disabled={busy} onClick={state === "on" ? disable : enable}>{busy ? <Spinner /> : state === "on" ? "Turn off" : "Turn on"}</button>}</div>;
+  return <div className={`push-card push-${state}`}><span className="push-card-icon">{state === "on" ? <BellRing size={22} /> : state === "off" ? <Bell size={22} /> : <BellOff size={22} />}</span><div><strong>{c.title}</strong><p>{c.text}</p></div>{(state === "on" || state === "off") && <button className={`button ${state === "on" ? "button-secondary" : "button-primary"} button-small`} disabled={busy} onClick={state === "on" ? disable : enable}>{busy ? <Spinner /> : state === "on" ? "Turn off" : "Turn on"}</button>}<PushDiagnostics /></div>;
 }
 const kindIcon: Record<string, typeof Bell> = { order: Package, gift: Gift, wallet: Wallet, boost: TrendingUp, number: Smartphone, mail: Mail, news: Megaphone, support: Headset, system: Sparkles };
 export function timeAgo(iso: string) { const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000); if (seconds < 60) return "just now"; if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`; if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`; if (seconds < 7 * 86400) return `${Math.floor(seconds / 86400)}d ago`; return new Date(iso).toLocaleDateString(); }

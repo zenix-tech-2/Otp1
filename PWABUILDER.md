@@ -26,5 +26,3 @@ After deploying, open https://www.pwabuilder.com, enter your URL and re-test.
 ## Notes
 - The old PWABuilder "Download a Service Worker" snippets use `importScripts` from storage.googleapis.com. `/sw.js` is served with `script-src 'self'`, so they would be blocked; `public/sw.js` has the same features without any external script.
 - The screenshots are generated mockups in the app's colours. Replace them with real screenshots at the same file names and sizes when you have them.
-- If your database already stores the app name as "Store OTP", change it in Admin → Settings.
-- `support@sellizi.store` (default support email in `src/lib/server.ts`) was left unchanged. Set your real address in Admin → Settings.

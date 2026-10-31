@@ -1,8 +1,8 @@
-// Client-safe pop-up definitions shared by the storefront, the admin editor and the API.
+// Client-safe pop-up definitions shared by the storefront and the API.
 export type PopupFrequency = "session" | "once";
 export type Popup = {
   id: string; title: string; body: string;
-  /** "" (no image), a small data: URL uploaded by the admin, or a path inside the app such as /images/gift.webp */
+  /** "" (no image), a small data: URL, or a path inside the app such as /images/gift.webp */
   image: string;
   buttonLabel: string;
   /** Optional call-to-action target: a path inside the app (/gift) or an https:// link. */
@@ -25,5 +25,3 @@ export function popupLive(p: Popup, now = Date.now()) {
   return true;
 }
 export function safePopupLink(url: string) { return url.startsWith("/") && !url.startsWith("//") ? "internal" : /^https:\/\//i.test(url) ? "external" : null; }
-export const APP_APK_PATH = "/store-otp.apk";
-export function safeDownloadPath(url: string) { return /^\/[\w./-]{1,120}\.(apk|aab|zip|pdf)$/i.test(url) && !url.includes("..") && !url.startsWith("//"); }

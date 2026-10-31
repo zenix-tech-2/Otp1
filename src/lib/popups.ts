@@ -9,6 +9,3 @@ export async function loadPopups(): Promise<Popup[]> {
   const items = (row?.value as { items?: Popup[] } | undefined)?.items;
   return Array.isArray(items) ? items : [];
 }
-export async function savePopups(items: Popup[]) {
-  await db.insert(settings).values({ key: "popups", value: { items } }).onConflictDoUpdate({ target: settings.key, set: { value: { items } } });
-}

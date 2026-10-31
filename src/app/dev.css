@@ -94,20 +94,10 @@
 .dev-links{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}.dev-links a{display:inline-flex;align-items:center;gap:8px;color:var(--blue);font-weight:600;word-break:break-all}
 .dev-thread{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto}
 .dev-msg{max-width:88%;padding:10px 14px;border-radius:14px;background:#eef1f7}.dev-msg span{display:block;margin-bottom:3px;color:var(--muted);font-size:11px}.dev-msg p{margin:0;white-space:pre-wrap;word-break:break-word}
-.dev-msg-customer{align-self:flex-end;background:#eaf0ff}.dev-msg-admin{align-self:flex-start}
+.dev-msg-customer{align-self:flex-end;background:#eaf0ff}.dev-msg-team{align-self:flex-start}
 .dev-compose{display:flex;flex-direction:column;gap:8px}.dev-compose textarea{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font:inherit;resize:vertical}
 .dev-compose .button{align-self:flex-end}
 .dev-brief summary{cursor:pointer;font-weight:700}.dev-brief[open] summary{margin-bottom:12px}
 .dev-order-link,.dev-support-link{display:flex;align-items:center;gap:6px;margin:0;color:var(--muted);font-size:13px}
 .dev-order-link a,.dev-support-link a{color:var(--blue);font-weight:600}
-/* admin */
-.dev-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-.dev-admin-card{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
-.dev-admin-card img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;background:#eef1f7}
-.dev-admin-card h3{margin:0;font-size:16px}.dev-admin-card p{margin:0;color:var(--muted);font-size:13px}
-.dev-admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
-.dev-admin-images{display:flex;flex-wrap:wrap;gap:8px}.dev-admin-images figure{position:relative;margin:0;width:92px;height:68px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
-.dev-admin-images img{width:100%;height:100%;object-fit:cover}.dev-admin-images button{position:absolute;top:3px;right:3px;width:20px;height:20px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;line-height:1}
-.dev-admin-block{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--line);border-radius:14px;margin-bottom:14px}.dev-admin-block h4{margin:0;font-size:14px}
-.dev-admin-row{display:flex;gap:10px;flex-wrap:wrap}.dev-admin-row>*{flex:1 1 140px}
 @media(max-width:560px){.dev-review-block dl>div{grid-template-columns:1fr;gap:2px}.dev-gallery .dev-gallery-main{grid-column:span 2}}

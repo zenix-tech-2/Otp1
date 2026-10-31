@@ -1,4 +1,4 @@
-// "Account age" for social-account listings is typed by the admin as plain text ("2 years", "18 months", "since 2019").
+// "Account age" for social-account listings is plain text ("2 years", "18 months", "since 2019").
 /** Best-effort age in months, used for sorting. Unknown text returns 0. */
 export function ageMonths(text: string | undefined | null): number {
   if (!text) return 0; const t = text.toLowerCase().trim();

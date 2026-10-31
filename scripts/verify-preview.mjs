@@ -28,7 +28,7 @@ assert(html.includes("Our services"), "The service categories are missing.");
 assert(/no-store/i.test(home.headers.get("cache-control") || ""), "The storefront must not serve cached starter HTML.");
 console.log("PASS real Store OTP homepage; no starter screen; entry-page caching disabled");
 
-for (const path of ["/store", "/store/premium", "/store/proxies", "/store/socials", "/numbers", "/services", "/orders", "/news", "/updates", "/install", "/account", "/account/profile", "/notifications", "/wallet", "/support", "/terms", "/register", "/login", "/admin"]) {
+for (const path of ["/store", "/store/premium", "/store/proxies", "/store/socials", "/numbers", "/services", "/orders", "/news", "/updates", "/install", "/account", "/account/profile", "/notifications", "/wallet", "/support", "/terms", "/register", "/login"]) {
   const content = await (await get(path)).text();
   assert(!starter.test(content), `Starter content found at ${path}.`);
   assert(content.includes("Store OTP"), `Missing application branding at ${path}.`);

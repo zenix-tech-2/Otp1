@@ -38,7 +38,7 @@ function useDownload() {
   return { dl, start, cancel };
 }
 
-/** Admin-managed pop-ups. They appear after a customer signs in, one at a time, and respect each pop-up's frequency. */
+/** Store pop-ups. They appear after a customer signs in, one at a time, and respect each pop-up's frequency. */
 export function PopupNotices() {
   const { user } = useStore(); const router = useRouter(); const { dl, start, cancel } = useDownload(); const [queue, setQueue] = useState<Popup[]>([]); const loadedFor = useRef<string | null>(null);
   const userId = user?.id;

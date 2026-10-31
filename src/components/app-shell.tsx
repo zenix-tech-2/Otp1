@@ -23,7 +23,7 @@ function active(pathname: string, href: string) { return href === "/" ? pathname
 export function AppShell({ children }: { children: ReactNode }) {
   const { online } = usePwa(); const { money } = useMoney(); const pathname = usePathname();
   const { user, openPanel, panel, demo, settings, pricing, refreshAccount, notify, announcements } = useStore(); const { unread } = useInbox();
-  const admin = pathname === "/admin" || pathname.startsWith("/admin/"); const bare = admin || pathname === "/mail" || pathname === "/temp-numbers"; const [servicesOpen, setServicesOpen] = useState(false); /* /mail and /temp-numbers are full-screen app-style pages with their own bars */
+  const bare = pathname === "/mail" || pathname === "/temp-numbers"; const [servicesOpen, setServicesOpen] = useState(false); /* /mail and /temp-numbers are full-screen app-style pages with their own bars */
   useEffect(() => { setServicesOpen(false); }, [pathname]);
   return <>{!bare && <><header className="site-header"><div className="header-inner">
     <button className="icon-button menu-toggle" aria-label="Open navigation drawer" onClick={() => openPanel("menu")}><Menu size={23}/></button><Logo/>
@@ -34,11 +34,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     <Link className={`icon-button notification-button ${unread > 0 ? "has-unread" : ""}`} href="/notifications" aria-label={unread > 0 ? `Open notifications, ${unread} unread` : "Open notifications"}><Bell size={21}/>{unread > 0 ? <span className="notification-badge">{unread > 9 ? "9+" : unread}</span> : announcements.length > 0 && <span className="notification-dot"/>}</Link>
     <Link className="profile-button" href="/account" aria-label="Open your account"><UserRound size={23}/></Link></div>
   </div></header>{settings.maintenance && <div className="maintenance-strip">We’re making a few improvements. Browsing and order tracking are still available.</div>}{user && user.currency !== "USD" && !pricing && <div className="currency-availability-strip"><ShieldCheck size={15}/><span>Your {user.currency} wallet is safe. Local price conversion is temporarily unavailable.</span><button onClick={() => refreshAccount().catch(() => notify("Rates are still unavailable. Please try again shortly.","error"))}>Retry<ArrowRight size={12}/></button></div>}</>}
-  {!admin&&!online&&<div className="offline-connection-bar"><WifiOff size={15}/>You’re offline. Reconnect before making a purchase, payment, or account change.</div>}
+  {!online&&<div className="offline-connection-bar"><WifiOff size={15}/>You’re offline. Reconnect before making a purchase, payment, or account change.</div>}
   {children}
   {!bare && <><footer className="site-footer"><div><Logo/><p>{settings.announcement || "Your digital world. A little simpler."}</p></div><div className="footer-right"><div className="footer-links"><Link href="/support">Help & support</Link><Link href="/news">News</Link><Link href="/updates">App updates</Link><Link href="/install">Install app</Link><Link href="/terms">Privacy & terms</Link></div><p>© {new Date().getFullYear()} {settings.appName}. All rights reserved.{demo && <span className="demo-footer">Sandbox preview</span>}</p>{pricing?.source === "exchange-rate-api" && <a className="fx-attribution" href="https://www.exchangerate-api.com" target="_blank" rel="noreferrer">Rates by ExchangeRate-API</a>}</div></footer>
   <nav className="mobile-navigation" aria-label="Mobile navigation">{navigation.map(n => n.href === "/services" ? <button key={n.href} type="button" className={servicesOpen || active(pathname,n.href) ? "mobile-nav-active" : ""} aria-haspopup="dialog" aria-expanded={servicesOpen} onClick={() => setServicesOpen(true)}><n.icon size={21}/><span>Services</span></button> : <Link key={n.href} href={n.href} className={active(pathname,n.href) ? "mobile-nav-active" : ""} aria-current={active(pathname,n.href) ? "page" : undefined}><n.icon size={21}/><span>{n.label}</span></Link>)}</nav></>}
-  {panel === "menu" && !admin && <Drawer/>}{servicesOpen && !admin && <ServicesSheet onClose={() => setServicesOpen(false)}/>}{!bare && <AiChat/>}{!admin && <PopupNotices/>}{!admin && <PushPrompt/>}</>;
+  {panel === "menu" && <Drawer/>}{servicesOpen && <ServicesSheet onClose={() => setServicesOpen(false)}/>}{!bare && <AiChat/>}<PopupNotices/><PushPrompt/></>;
 }
 function Drawer() {
   const { money } = useMoney(); const { closePanel, user, categories } = useStore(); const pathname = usePathname(); const ref = useRef<HTMLElement>(null);

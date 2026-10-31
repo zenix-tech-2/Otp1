@@ -32,9 +32,7 @@
 .checkout-summary .discount-row strong{color:#13785f}
 .gift-banner{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:linear-gradient(120deg,#fdeefb,#f1ecff);border:1px solid #f1d9ee;margin-bottom:14px;color:#142344}.gift-banner>span:first-child{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:#fff;color:#c23ab0;flex:none}.gift-banner strong{display:block;font-size:13px}.gift-banner p{margin:3px 0 0;font-size:12px;color:#60708d;line-height:1.5}
 .age-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;background:#f1ecff;color:#6b4fe0;font-size:11px;font-weight:700;white-space:nowrap}
-.age-pill svg{flex:none}
-/* admin promotions */
-.promo-layout{display:grid;gap:18px}@media(min-width:980px){.promo-layout{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:start}}
+.age-pill svg{flex:none}@media(min-width:980px){.promo-layout{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:start}}
 .promo-panel{background:#fff;border:1px solid #e8edf5;border-radius:18px;padding:18px;display:grid;gap:14px}.promo-panel h3{margin:0;font-size:15px}.promo-panel>p{margin:0;font-size:12px;color:#7b869e}
 .promo-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.promo-form .span2{grid-column:1/-1}
 .promo-form label{display:grid;gap:5px;font-size:11.5px;font-weight:650;color:#4d5d7a}.promo-form input,.promo-form select,.promo-form textarea{width:100%;border:1px solid #dfe6f2;border-radius:10px;padding:10px 11px;background:#fff;color:#142344;font-size:13px;font-weight:500}

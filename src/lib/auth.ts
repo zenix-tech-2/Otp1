@@ -56,12 +56,6 @@ export async function requireUser() {
   if (!user) throw new AppError("Please sign in to continue.", 401);
   return user;
 }
-export async function requireAdmin() {
-  const user = await getUser(false);
-  if (!user) throw new AppError("Administrator sign-in is required.", 401);
-  if (user.role !== "admin") throw new AppError("Administrator access is required.", 403);
-  return user;
-}
 export function publicUser(user: User | null) {
   if (!user) return null;
   return { id: user.id, name: user.name, email: user.role === "demo" ? "alex@example.com" : user.email, balance: user.balance, role: user.role, isDemo: user.isDemo, countryCode: user.countryCode, countryName: user.countryName, currency: user.currency };

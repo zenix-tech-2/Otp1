@@ -1,5 +1,4 @@
-/* Admin pop-ups (shown after sign-in) and the Send a gift page. */
-.popup-scrim{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;background:#0b122099;backdrop-filter:blur(2px);animation:popup-fade .18s ease-out}
+
 .popup-card{position:relative;width:100%;max-width:420px;max-height:calc(100dvh - 40px);overflow:auto;background:#fff;color:var(--navy);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 60px #0b12204d;display:grid;animation:popup-rise .22s ease-out}
 .popup-image{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:18px 18px 0 0}
 .popup-content{padding:22px 22px 6px;display:grid;gap:10px}
@@ -74,3 +73,10 @@ html[data-theme="dark"] .gift-durations button{background:#121a2b;border-color:#
 .push-ask p{margin:3px 0 10px;font-size:13.5px;line-height:1.5;color:var(--muted)}
 .push-ask-actions{display:flex;gap:8px;flex-wrap:wrap}
 .push-ask-x{position:absolute;top:8px;right:8px;border:0;background:transparent;color:var(--muted);padding:6px;cursor:pointer;border-radius:8px}
+
+.push-diag{flex-basis:100%;margin-top:8px;font-size:12.5px}
+.push-diag summary{cursor:pointer;font-weight:600;color:var(--blue)}
+.push-diag dl{margin:8px 0 0;display:grid;gap:4px}
+.push-diag dl div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:3px 0}
+.push-diag dt{color:var(--muted)}.push-diag dd{margin:0;font-weight:600;text-align:right;overflow-wrap:anywhere}
+.push-card{flex-wrap:wrap}

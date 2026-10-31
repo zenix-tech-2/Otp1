@@ -14,9 +14,8 @@ The app supports browser installation at **`/install`**, separate **`/news`** an
 
 ## Navigation & growing your catalog
 
-Customer screens now have their own full-page URLs: `/account`, `/notifications`, `/wallet`, `/support`, and `/account/profile`. Category pages use `/store/premium`, `/store/proxies`, `/store/socials`, and any new admin-defined slug. The bottom navigation ends with **Account**, and administration is accessible only by opening **`/admin`** directly—there are no customer-facing admin links.
 
-**Existing deployment:** apply `supabase/upgrade-categories.sql` once before deploying this update. See [NAVIGATION.md](NAVIGATION.md) for routes, redirects, category creation, and private administrator access.
+**Existing deployment:** apply `supabase/upgrade-categories.sql` once before deploying this update. See [NAVIGATION.md](NAVIGATION.md) for routes and redirects.
 
 ## What is included
 
@@ -28,22 +27,11 @@ Customer screens now have their own full-page URLs: `/account`, `/notifications`
 - Ashtech Pay Direct API wallet funding (Mobile Money and USDT), country-based signup currencies, account registration/login, in-app notifications, app news, and customer support tickets/replies.
 - Full-page customer screens and a history-aware navigation drawer. Browser and Android system Back navigate between real routes naturally.
 
-### Administrator workspace (`/admin`)
-- Overview with actual sales, customer, inventory, and activation data. Charts do not fabricate revenue or growth figures.
-- Database-managed categories with clean URLs, editable appearance/order/visibility, reusable product-form templates, and custom fields for future product types.
-- Official brand logos, custom image uploads, price/compare-at-price, stock, product badges, publication/archiving, and public product metadata.
-- Four delivery modes: manual fulfillment, shared instructions, one-use private inventory, and signed private file downloads.
-- Customer suspension/reactivation, audited wallet adjustments, purchase tracking, verified deposit approval, manual fulfillment, and exactly-once wallet refunds.
-- Global SMS percentage markup, product price editing, maintenance mode, registration control, store name/tagline/support settings.
-- News and in-app notification publishing/archiving, support replies, audit log/CSV export, and a protected NumberOTP operations console.
-- Manual reconciliation for ambiguous provider provisioning timeouts; a timeout does not silently create a second number or assume that the provider did not charge.
-
 ## Boost (SMM services) — SMM v1 / SMM v2
 
 Customers open **/boost** (or Services → Boost) and run a four-step flow: platform → category → service → link and quantity, paying from their wallet. They choose **SMM v1** or **SMM v2**; real provider names, keys and raw rates never reach the browser.
 
 - Configure `SMM_V1_API_KEY` / `SMM_V2_API_KEY` (and optionally `SMM_V1_API_URL` / `SMM_V2_API_URL`) in your server environment. v1 = ExoSupplier, v2 = Peakerr. Both use the standard SMM-panel API (`key`, `action=services|add|status`).
-- Set the markup in **Admin → Pricing & margins** (default 35%).
 - **Existing deployment:** apply `supabase/upgrade-smm.sql` once (or run `npx drizzle-kit push`). Fresh installs get the `smm_orders` table from `supabase/schema.sql`.
 - Wallet is debited when the order is placed. Cancelled orders are refunded in full; partially delivered orders are refunded for the undelivered share. If the provider can't be reached, the order goes to "Being checked" instead of being refunded or retried automatically.
 - Order status is refreshed when customers open /boost and by `/api/cron/reconcile`.
@@ -67,10 +55,8 @@ The supplied development environment already has PostgreSQL. All database access
 - Uses a curated set of example services/countries/prices.
 - Allocates fictional US 202-555-01xx numbers; a clearly labeled sample OTP appears after approximately 18 seconds while polling.
 - Supports demo number cancellation and test wallet top-ups; no real money is collected.
-- Preview accounts are ordinary customers. Administrator access requires an actual admin account, even in sandbox mode.
 - Blocks all actual NumberOTP console operations, even if a key was inadvertently supplied.
 
-Use a **separate clean database for production**. Never point an explicitly enabled public demo at a live database. `APP_MODE=live` disables demo account creation, does not seed sample products, and enforces normal authentication/administrator roles. If `VERCEL` is present and `APP_MODE` is omitted, the app fails closed into live behavior, not public demo administration.
 
 ## 2. Supabase setup
 
@@ -91,24 +77,9 @@ Alternatively, use Drizzle migrations to create the tables. Do not then rerun th
 
 ### Storage
 Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in the **server environment only**.
-- `product-assets`: public product/category images, admin-uploaded PNG/JPG/WebP/GIF.
 - `product-deliveries`: private customer files, including APK. Downloads require ownership of a completed order; new Storage downloads receive a five-minute signed URL (legacy links use 60 seconds).
-- `news-media`: private article photos, videos, audio, and attachments. Publication or administrator access is checked before a short-lived signed media URL is issued.
 - Signed direct uploads bypass Vercel’s function body limit: products up to 250 MB, images 10 MB, news video 150 MB, audio 50 MB, and attachments 25 MB. Supabase plan/global limits apply; see MEDIA-PWA.md.
-- No public upload/update/delete storage policies are created. The server validates administrator access and file types.
 - Without Storage configured, sandbox files up to 4 MB are actually stored in the preview database and served with the same publication/ownership checks. Live uploads require Supabase Storage.
-
-## 3. Initial administrator
-
-For live deployment set:
-- `ADMIN_EMAIL`: your private administrator email.
-- `ADMIN_PASSWORD`: a unique, strong password of **at least 12 characters**.
-
-Visit `/admin`, open the sign-in dialog, and sign in with those credentials. The first successful login creates the administrator with a scrypt-hashed password. The reserved administrator email cannot be claimed by ordinary registration.
-
-After creation, authentication uses the stored password hash. Use **Account → Profile & security** to change your name or rotate your password; a password change revokes other sessions. Changing the bootstrap environment password does **not** reset an existing account password. Do not share the bootstrap password or seed a production admin with demonstration credentials. New ordinary users always receive the user role. Admin-only operations do not accept a client-supplied role escalation.
-
-Sessions are random 256-bit tokens whose SHA-256 hashes are stored in the database, with HTTP-only, same-site cookies and a seven-day expiry. Cookies are Secure in production. Suspending an account removes its sessions.
 
 ## 4. NumberOTP configuration
 
@@ -121,34 +92,6 @@ Set `APP_MODE=live` and `NUMBEROTP_API_KEY`. The documented default base URL is 
 
 The live storefront loads the provider's **complete returned service and country catalog**, including stock and current prices. It handles the documented/observed nested response shapes (`data.services`, country objects with English `eng` names, and country/service-keyed price data). Logos are locally included for popular platforms; known additional brands use checked-in, embedded icon files. Unmapped services get an honest generic phone icon, not a fabricated logo.
 
-### Operations coverage
-
-The admin console exposes every operation in the public references consulted:
-
-| Area | Documented paths (relative to `/v1`) |
-| --- | --- |
-| Catalog | `GET /public/services`, `GET /public/countries`, `GET /public/prices` |
-| Activations | `POST /activations`, `GET /activations/{id}`, `GET /activations/{id}/wait` |
-| Rentals | `POST /rentals` |
-| Reseller profile | `GET /reseller/profile`, `PATCH /reseller/profile` |
-| Sub-users | `GET /reseller/users`, `POST /reseller/users`, `GET/PATCH/DELETE /reseller/users/{id}` |
-| Markup | `GET /reseller/markup`, `PATCH /reseller/markup` |
-| Balances | `POST /reseller/payout/convert`, `POST /reseller/payout/withdraw`, `POST /reseller/payments/crypto` |
-| White-label | `GET /reseller-public/{id}/brand`, `POST /reseller-public/{id}/signup` |
-| Sub-user funding | `POST /reseller-public/{id}/topup/card`, `POST /reseller-public/{id}/topup/crypto` |
-
-That is **23 allowlisted REST operations**, plus global activation and reseller event webhook handling.
-
-Important distinctions:
-- Console requests are **administrative provider operations**, not local customer purchases. Provisioning a number in the console spends provider credits without automatically creating a local wallet order.
-- NumberOTP reseller sub-users and Store OTP users are distinct systems; the console manages provider sub-users explicitly. Provider sub-user events are audited, not automatically translated into unverified local wallet credits.
-- `NUMBEROTP_SUBUSER_API_KEY` is required for the two sub-user-hosted checkout operations. The reseller key is not silently substituted.
-- Public reseller signup needs a real Cloudflare Turnstile token and subsequent provider email verification.
-- Local SMS markup is separate from the provider's reseller sub-user multiplier/override settings.
-- The public docs expose `/rentals` but do not publish its request schema. The console accepts the payload you obtain from NumberOTP support. The customer UI collects a rental quote request without charging a wallet.
-- No public cancellation/resend endpoint, rental renewal endpoint, or programmatic domain verification route is invented. Customers' live numbers expire according to the provider. Sandbox release is explicitly labeled demo-only.
-- Provider approval, account funding, service eligibility, rate limits, and accurate live prices must be verified with your actual provider account before selling. Live provisioning could not be exercised without your credentials.
-
 ### Price integrity and activation lifecycle
 - Catalog/provider base prices remain integer USD cents. Wallets, orders, and refunds use integer minor units of each account’s assigned currency (XAF/XOF have zero decimal places). USD retail SMS prices are marked up first, then converted to the customer’s currency.
 - A fresh provider quote is checked on purchase. A changed price returns a conflict and requires a new review. The provider request includes a `max_price` cost cap.
@@ -156,7 +99,6 @@ Important distinctions:
 - Provider-confirmed provisioning rejection is refunded. Ambiguous timeouts are marked `reconciliation`, not automatically retried.
 - OTP data is scoped to the signed-in owner. Browser polling runs approximately every five seconds while waiting; manual long-polling supports the documented 55-second wait.
 - Countdown uses provider `expires_at` or `expiresAt`; `NUMBEROTP_ACTIVATION_MINUTES` is a display fallback when neither is returned. **A client-side timer reaching zero never independently authorizes a refund.**
-- A completed/delivered activation cannot be automatically refunded. Provider-confirmed expired/cancelled/failed outcomes refund once; deliberate administrator refunds are audited.
 
 ### Webhooks
 Set both the NumberOTP global webhook and reseller webhook URL to:
@@ -194,23 +136,19 @@ Customer wallet funding now uses **Ashtech Pay Direct API**, not Hosted Checkout
 - Country choices at signup come from authenticated `GET /v1/countries` (active deposit countries). The server assigns the returned ISO currency; it never trusts a browser-supplied currency.
 - **Other / country not listed → USD ($)**. This option remains available when the provider catalog is unavailable. The UI does not pretend an unavailable catalog is an empty active-country list.
 - Country/currency are fixed on the account to protect existing balances. Existing accounts and orders migrate safely to **Other / USD**, without changing numeric balances.
-- Product and SMS prices are converted from the store’s USD base price and debited in the account currency. Receipts retain the actual currency, minor amount, and locked USD equivalent. Admin sales charts sum USD equivalents, never a mixture of currencies.
 - Mobile Money supports provider-returned USSD Push, Wave, OTP SMS, and OTP USSD flows. Operators and OTP dialing codes are not hardcoded in live mode.
 - USDT uses the active `/v1/crypto/assets` catalog, actual payer first/last name and email, exact returned network/address/memo, and provider expiry. USD accounts can pay USDT or explicitly quote a supported Mobile Money currency; the account itself stays USD.
 - The store covers Ashtech Pay processing fees. Network/operator charges outside the store may still apply. The full payable amount and wallet credit are shown before initiation.
 - Only a server-reloaded, matching confirmed transaction credits the wallet. Browser redirects, pending responses, screenshots, and provider sandbox responses are not proof of payment.
 - Signed, timestamp-checked webhooks are durably recorded and deduplicated. The same credit cannot be applied twice. Timeouts stay in reconciliation rather than launching a second collection.
-- Ordinary `POST /api/account` top-up credits are disabled. Admin manual approval cannot approve an Ashtech Pay-linked deposit. Audited administrator adjustments remain available for legitimate, separately verified corrections.
 
 ## 6. Vercel deployment
 
 1. Push this project to your Git provider and import it into Vercel. Framework preset: **Next.js**.
-2. Configure production environment variables from `.env.example`, especially `APP_MODE=live`, `DATABASE_URL`, administrator credentials, NumberOTP credentials, and the Ashtech Pay variables in ASHTECHPAY.md.
 3. Apply the Supabase schema before the first application request. Production does not silently create application tables.
 4. Configure Storage credentials and buckets if you want uploads/downloads.
 5. Set `CRON_SECRET` to a random value of at least 16 characters. Vercel automatically sends it as a Bearer token to the reconciliation route.
 6. Deploy. The build command is `npm run build`.
-7. Verify `/api/health`, administrator login, provider catalog/prices, a low-cost live activation, webhook delivery, expiry behavior, and funding policy and an Ashtech Pay merchant-verified payment before admitting customers.
 8. Add your custom domain in Vercel. A custom app domain is separate from the provider's optional hosted white-label domain settings.
 
 `vercel.json` includes a **daily** reconciliation job compatible with Vercel Hobby's cron limits. It removes expired sessions/rate-limit windows and reconciles expired waiting activations in bounded batches. Interactive polling and OTP webhooks provide normal fast updates. For a commercial store, configure a more frequent schedule on a plan that supports it and monitor outstanding reservations; a daily Hobby job alone is not an immediate background-refund or payment-reconciliation SLA. The job also drains queued Ashtech Pay events and checks pending payment transactions. No cron retry guarantee is assumed.
@@ -224,7 +162,6 @@ See `.env.example` for annotated values. No real keys are included.
 | `APP_MODE` | `demo` or `live` |
 | `DATABASE_URL` | Runtime PostgreSQL/Supabase pooled connection |
 | `DIRECT_DATABASE_URL` | Optional direct/session migration connection |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Initial administrator bootstrap |
 | `NUMBEROTP_BASE_URL` | Optional override of documented API base |
 | `NUMBEROTP_API_KEY` | Server-side account/reseller Bearer key |
 | `NUMBEROTP_WEBHOOK_SECRET` | Activation webhook HMAC secret |
@@ -249,7 +186,6 @@ Production validation:
 2. `npm exec tsc -- --noEmit --pretty false`
 3. `npm run build`
 4. Start the production application through your hosting/runtime process and confirm `/api/health`. It now verifies all application tables and columns and returns `app: "store-otp"`; a database ping alone is not accepted as application readiness.
-5. Run `PREVIEW_URL=https://YOUR_DEPLOYMENT node scripts/verify-preview.mjs`. This read-only check verifies that the deployed entry page actually renders Store OTP, rejects starter-template content, checks the release identity and cache headers, and opens the store, numbers, admin, signup, and wallet routes. Test the exact URL customers use, not only localhost.
 
 The original browser smoke test is `scripts/smoke.mjs`. Country/payment browser tests are in `scripts/payment-browser.mjs`; mocked Direct API contract tests are in `scripts/payment-contract.mjs` (commands in ASHTECHPAY.md). It requires a running **sandbox** app and Chromium (`npx playwright install chromium`). Run `PREVIEW_URL=http://localhost:3000 node --import dotenv/config --import tsx scripts/smoke.mjs` against a disposable sandbox database. The test intentionally creates sandbox purchases, support records, and archived test listings, and restores modified store settings. It must never be pointed at a real-money production store.
 
@@ -258,7 +194,6 @@ Screenshots and test artifacts are ignored by Git.
 ## Project map
 
 - `src/app/`: App Router pages, styles, and route handlers.
-- `src/components/`: Storefront, number journey, dialogs, and administrator workspace.
 - `src/db/schema.ts`: Typed Drizzle schema; `src/db/index.ts`: PostgreSQL pool.
 - `src/lib/numberotp.ts`: Server-only provider transport and response normalization.
 - `src/lib/provider-operations.ts`: Documented API operation allowlist.
@@ -267,14 +202,12 @@ Screenshots and test artifacts are ignored by Git.
 - `src/lib/storage.ts`: Server-only Supabase Storage client.
 - `supabase/schema.sql`: Fresh-project SQL, RLS, and Storage buckets.
 - `supabase/upgrade-categories.sql`: Additive category-management upgrade; preserves existing products and orders.
-- `NAVIGATION.md`: Full-page routes, private admin entry, redirects, and expandable catalog instructions.
 - `supabase/upgrade-ashtechpay.sql`: Additive upgrade for the previous app schema; existing USD balances are preserved.
 - `src/lib/payments.ts`, `ashtech.ts`, `payment-verification.ts`: Direct API collection, verification, and idempotent wallet settlement.
 - `src/lib/currency.ts`, `fx.ts`: Currency-specific precision and server-side price conversion.
 - `drizzle/`: Generated SQL migration and schema metadata.
 - `public/images/`, `public/brands/`, `public/fonts/`, `public/icons/`: Included artwork, brand/install icons, and typography.
 - `src/lib/brand-assets.ts`: Embedded copies of all configured brand logos.
-- `src/lib/uploads.ts`, `upload-client.ts`, `upload-policy.ts`: Admin-only direct uploads, validation, limits, and progress.
 - `supabase/upgrade-media-uploads.sql`: Non-destructive media/upload upgrade.
 - `public/sw.js`, `public/offline.html`, `src/app/manifest.ts`: Browser installation and safe static-asset/offline support.
 
@@ -298,7 +231,6 @@ A new **Websites & Bots** category (`/build`) lets customers order custom develo
 
 - **Order forms:** 10 project types (website, web app, online store, Telegram bot, WhatsApp bot, Discord bot, mobile app, API/backend, fix/redesign, other). Each has its own multi-step brief with choice fields (chips and dropdowns) and free-text fields. The definitions live in `src/lib/dev-forms.ts` and are validated on the server too. Edit that file to add or change questions.
 - **Customer flow:** brief, quote, accept and pay from the wallet, chat, receive delivery, approve. Pages: `/build`, `/build/portfolio`, `/build/order/[type]`, `/build/requests`.
-- **Admin:** **Project requests** (review briefs, send quotes, message customers, deliver links, cancel with automatic wallet refund) and **Built projects** (add, edit, hide, feature or delete portfolio items, with image uploads).
 - **Database:** run `supabase/upgrade-dev-service.sql` once on an existing database (a fresh install of `supabase/schema.sql` already includes the tables). The category is added automatically on first load.
 - Payment happens only when the customer accepts a quote. Paid projects appear under **Projects** in the customer's purchases.
 
@@ -309,19 +241,16 @@ A floating **Ask AI** button opens a chat that helps customers find products, vi
 - **Setup:** add `GROQ_API_KEY` (server-side only) in your hosting environment variables and redeploy. With no key the assistant switches itself off politely and points customers to Support. No database changes are needed.
 - **Models:** `openai/gpt-oss-120b` for chat and tools, `qwen/qwen3.8-27b` when a screenshot is attached. Groq retires models regularly, so override them with `GROQ_MODEL` and `GROQ_VISION_MODEL` if a model is shut down.
 - **Safety:** the assistant only reads public catalog data and the signed-in customer's own account. It never sees private delivery content, cannot spend money or change accounts, and customers confirm every purchase themselves. Chats are rate-limited per visitor.
-- **Support tickets:** "Talk to a person" creates a normal support ticket (subject starts with "Chat:") including a short transcript, visible in the admin Support inbox.
 - Chat history stays on the customer's device for 24 hours and is not stored on the server.
 
 ## Notifications, dark theme, coupons, gifting
 
 **Database:** run `npx drizzle-kit push`, or `supabase/upgrade-engagement.sql` once on an existing database (fresh installs: `supabase/schema.sql` already has it). The SQL also adds an "Account age" field to your existing social categories.
 
-**Live notifications.** Every customer has an inbox (bell icon → "For you"). It refreshes about every 25 seconds while the app is open and shows a toast for new items. Orders delivered by hand, gifts received, wallet top-ups, finished boosts and arrived SMS codes create notifications automatically. Admin → Promotions can send a notification to everyone.
 Web push (alerts when the app is closed) needs a key pair: run `npm run vapid`, put the three `VAPID_*` values in your environment variables and redeploy. Without keys the inbox still works and the "Turn on push" card stays hidden. On iPhone, push only works after the app is added to the Home Screen.
 
 **Dark theme.** A sun/moon button in the header toggles it; Account → Appearance offers Light / Dark / Auto. The dark colours are generated from your CSS by `npm run dark` (writes `src/app/dark.generated.css`): re-run it whenever you change colours in a `.css` file. Hand-made exceptions go in `src/app/dark.css`.
 
-**Coupons.** Admin → Promotions: percentage or fixed (USD) discounts with optional cap, minimum order, total and per-customer limits, category restriction and start/end dates. Customers enter the code on the checkout screen; the server re-checks every rule inside the purchase transaction. Refunding an order gives the coupon use back. Coupons apply to store products (not Boost or SMS numbers).
 
 **Gifting.** On checkout, "Send this as a gift" takes the recipient's account email (they must already have an account), shows "Sending to Jane D." for confirmation, and delivers to the recipient's own purchases with a notification. The buyer pays; refunding the buyer's order cancels an undelivered gift. Gifts work for every store product (including subscriptions, premium apps and social accounts). Boost and SMS numbers can't be gifted because they are tied to a link or phone number the buyer controls.
 
