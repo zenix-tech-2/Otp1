@@ -236,6 +236,8 @@ A new **Websites & Bots** category (`/build`) lets customers order custom develo
 
 ## Store OTP AI assistant (Groq)
 
+**Live chat:** the Support screen is a real conversation with the store team (instant sending, replies arrive on their own and as push notifications). Run `supabase/upgrade-support-chat.sql` once on an existing database.
+
 A floating **Ask AI** button opens a chat that helps customers find products, virtual number services and prices, start a website or bot brief, check their wallet and orders, and send a support ticket to your team.
 
 - **Setup:** add `GROQ_API_KEY` (server-side only) in your hosting environment variables and redeploy. With no key the assistant switches itself off politely and points customers to Support. No database changes are needed.

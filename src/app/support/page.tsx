@@ -1,2 +1,3 @@
-import {SupportPage} from "@/components/account-pages";
-export default function Page(){return <SupportPage/>;}
+import { ChatPage } from "@/components/chat-page";
+export const metadata = { title: "Messages" };
+export default function Page() { return <ChatPage />; }

@@ -23,7 +23,7 @@ function active(pathname: string, href: string) { return href === "/" ? pathname
 export function AppShell({ children }: { children: ReactNode }) {
   const { online } = usePwa(); const { money } = useMoney(); const pathname = usePathname();
   const { user, openPanel, panel, demo, settings, pricing, refreshAccount, notify, announcements } = useStore(); const { unread } = useInbox();
-  const bare = pathname === "/mail" || pathname === "/temp-numbers"; const [servicesOpen, setServicesOpen] = useState(false); /* /mail and /temp-numbers are full-screen app-style pages with their own bars */
+  const bare = pathname === "/mail" || pathname === "/temp-numbers" || pathname === "/support"; const [servicesOpen, setServicesOpen] = useState(false); /* /mail and /temp-numbers are full-screen app-style pages with their own bars */
   useEffect(() => { setServicesOpen(false); }, [pathname]);
   return <>{!bare && <><header className="site-header"><div className="header-inner">
     <button className="icon-button menu-toggle" aria-label="Open navigation drawer" onClick={() => openPanel("menu")}><Menu size={23}/></button><Logo/>
@@ -38,7 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   {children}
   {!bare && <><footer className="site-footer"><div><Logo/><p>{settings.announcement || "Your digital world. A little simpler."}</p></div><div className="footer-right"><div className="footer-links"><Link href="/support">Help & support</Link><Link href="/news">News</Link><Link href="/updates">App updates</Link><Link href="/install">Install app</Link><Link href="/terms">Privacy & terms</Link></div><p>© {new Date().getFullYear()} {settings.appName}. All rights reserved.{demo && <span className="demo-footer">Sandbox preview</span>}</p>{pricing?.source === "exchange-rate-api" && <a className="fx-attribution" href="https://www.exchangerate-api.com" target="_blank" rel="noreferrer">Rates by ExchangeRate-API</a>}</div></footer>
   <nav className="mobile-navigation" aria-label="Mobile navigation">{navigation.map(n => n.href === "/services" ? <button key={n.href} type="button" className={servicesOpen || active(pathname,n.href) ? "mobile-nav-active" : ""} aria-haspopup="dialog" aria-expanded={servicesOpen} onClick={() => setServicesOpen(true)}><n.icon size={21}/><span>Services</span></button> : <Link key={n.href} href={n.href} className={active(pathname,n.href) ? "mobile-nav-active" : ""} aria-current={active(pathname,n.href) ? "page" : undefined}><n.icon size={21}/><span>{n.label}</span></Link>)}</nav></>}
-  {panel === "menu" && <Drawer/>}{servicesOpen && <ServicesSheet onClose={() => setServicesOpen(false)}/>}{!bare && <AiChat/>}<PopupNotices/><PushPrompt/></>;
+  {panel === "menu" && <Drawer/>}{servicesOpen && <ServicesSheet onClose={() => setServicesOpen(false)}/>}{!bare && <AiChat/>}<PopupNotices/>{!bare && <PushPrompt/>}</>;
 }
 function Drawer() {
   const { money } = useMoney(); const { closePanel, user, categories } = useStore(); const pathname = usePathname(); const ref = useRef<HTMLElement>(null);

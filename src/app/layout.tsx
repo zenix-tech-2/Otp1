@@ -20,6 +20,7 @@ import "./boost.css";
 import "./engagement.css";
 import "./gifting.css";
 import "./tempmail.css";
+import "./chat.css";
 import "./motion.css";
 import "./dark.generated.css";
 import "./dark.css";

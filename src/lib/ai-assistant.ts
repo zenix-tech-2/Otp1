@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/db";
-import { activations, devRequests, orders, products, storeCategories, tickets, type User } from "@/db/schema";
+import { activations, devRequests, orders, products, storeCategories, supportMessages, type User } from "@/db/schema";
 import { and, desc, eq, gt, like, sql } from "drizzle-orm";
 import { z } from "zod";
 import { AppError, getSettings } from "./server";
@@ -122,13 +122,13 @@ async function runTool(name: string, rawArgs: string, ctx: Ctx): Promise<unknown
       const data = z.object({ subject: z.string().trim().min(3).max(100), summary: z.string().trim().min(10).max(1500) }).safeParse(args);
       if (!data.success) return { error: "Subject (3-100 characters) and summary (10-1500 characters) are required." };
       if (ctx.escalated) return { ticket_id: ctx.escalated.ticketId, note: "Already sent in this conversation." };
-      const [recent] = await db.select({ count: sql<number>`count(*)::int` }).from(tickets).where(and(eq(tickets.userId, user.id), like(tickets.subject, "Chat:%"), gt(tickets.createdAt, sql`now() - interval '1 day'`)));
+      const [recent] = await db.select({ count: sql<number>`count(*)::int` }).from(supportMessages).where(and(eq(supportMessages.userId, user.id), like(supportMessages.body, "[Assistant hand-off]%"), gt(supportMessages.createdAt, sql`now() - interval '1 day'`)));
       if ((recent?.count ?? 0) >= 3) return { error: "limit", note: "The customer already sent several chat requests today. Tell them the team will reply soon." };
       const transcript = ctx.history.slice(-10).map(m => `${m.role === "user" ? "Customer" : "Assistant"}: ${clip(m.text.replace(/\s+/g, " "), 280)}`).join("\n");
-      const message = clip(`${data.data.summary}\n\n--- Chat transcript (AI assistant) ---\n${transcript}`, 3900);
-      const [ticket] = await db.insert(tickets).values({ userId: user.id, subject: `Chat: ${data.data.subject}`, message }).returning();
-      ctx.escalated = { ticketId: ticket.id };
-      return { ticket_id: ticket.id.slice(0, 8).toUpperCase(), note: "Sent. The customer can follow the reply in Support. Do not promise a refund or timing." };
+      const message = clip(`[Assistant hand-off] ${data.data.subject}\n${data.data.summary}\n\n--- Chat transcript (AI assistant) ---\n${transcript}`, 1950);
+      const [row] = await db.insert(supportMessages).values({ userId: user.id, sender: "customer", body: message }).returning();
+      ctx.escalated = { ticketId: row.id };
+      return { ticket_id: row.id.slice(0, 8).toUpperCase(), note: "Sent to the team's chat. The customer can follow the reply in Support. Do not promise a refund or timing." };
     }
     return { error: `Unknown tool ${name}.` };
   } catch (error) {

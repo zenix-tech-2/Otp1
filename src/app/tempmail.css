@@ -129,3 +129,68 @@
 .tm-r-from strong,.tm-r-from small{min-width:0;overflow-wrap:anywhere;word-break:break-word}
 .tm-r-from strong{white-space:normal}
 .tm-addr-main strong{min-width:0;overflow-wrap:anywhere}
+/* Compact sizing for the temp mail and temp numbers screens (about 15-20% smaller). Inputs stay at 16px so phones don't zoom on focus. */
+.tm-frame-col{max-width:480px}
+.tm-bar{padding:calc(8px + env(safe-area-inset-top,0px)) 14px 8px;gap:10px}
+.tm-bar h1{font-size:17px}
+.tm-round,.tm-round-space{width:38px;height:38px}
+.tm-pad{padding:12px 14px 22px;gap:12px}
+.tm-center{padding:24px 20px;gap:10px}
+.tm-signin-art{width:58px;height:58px;border-radius:18px}
+.tm-link{font-size:13px}
+.tm-error{padding:8px 12px;font-size:12.5px}
+.tm-card-wrap{padding-bottom:18px;margin-top:2px}
+.tm-card{min-height:350px;border-radius:26px}
+.tm-flap{height:150px}
+.tm-tile{width:124px;top:32px}
+.tm-kebab{top:12px;right:10px;width:34px;height:34px}
+.tm-address{font-size:18px;margin-bottom:4px}
+.tm-sub{font-size:14px}
+.tm-meta{margin:4px 0 16px;font-size:11.5px}
+.tm-green{height:46px;font-size:15.5px;border-radius:15px;gap:8px}
+.tm-green-sm{height:38px;padding:0 14px;font-size:14px;border-radius:12px}
+.tm-change{font-size:15px;padding:6px 12px}
+.tm-credit{font-size:11.5px}
+.tm-select{height:46px;padding:0 16px;font-size:14.5px;border-radius:14px}
+.tm-options{top:52px}
+.tm-envelope-card{min-height:360px;border-radius:32px;padding:0 20px 22px}
+.tm-env-text{font-size:13px;max-width:240px}
+.tm-soft{height:46px;border-radius:14px;font-size:15px}
+.tm-msgs{gap:8px}
+.tm-msg{padding:11px 12px;gap:10px;border-radius:15px}
+.tm-avatar{width:34px;height:34px;font-size:14px}
+.tm-msg-top strong{font-size:14px}
+.tm-msg-top time{font-size:11px}
+.tm-msg-subject{font-size:13px}
+.tm-chip{font-size:11px;padding:2px 8px}
+.tm-r-subject{font-size:18px}
+.tm-code{padding:11px 14px;border-radius:15px}
+.tm-images{font-size:11.5px;padding:8px 12px}
+.tm-mailframe{min-height:380px}
+.tm-text{font-size:14px;padding:13px}
+.tm-attachments{font-size:13px}
+.tm-ghost-danger{height:44px;border-radius:14px;font-size:14px}
+.tm-seg{padding:5px;border-radius:18px}
+.tm-dashed{padding:16px 18px;font-size:14px;border-radius:16px}
+.tm-addr-list{gap:8px}
+.tm-addr-main{padding:11px 14px}
+.tm-addr-main strong{font-size:14.5px}
+.tm-addr-main small{font-size:11.5px}
+.tm-addr-del,.tm-addr-open{width:38px;height:38px;margin-right:4px}
+.tm-tabs{padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+.tm-tabs button{font-size:12px;padding:3px 0;gap:2px}
+.tm-tab-icon{height:26px}
+.tm-sheet{padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));border-radius:28px 28px 0 0;gap:11px}
+.tm-sheet-x{width:38px;height:38px}
+.tm-sheet-btn{height:46px;border-radius:15px;font-size:15px}
+.tm-sheet-note{font-size:11.5px}
+.tm-providers button{padding:11px}
+.tm-name input{height:44px}
+.tn-versions button{height:34px;padding:0 13px;font-size:13px;border-radius:12px}
+.tn-warning{padding:8px 12px;font-size:12.5px}
+.tn-card{padding:18px 16px;border-radius:24px}
+.tn-card-label{font-size:12px}
+.tn-number{font-size:21px}
+.tn-msg{padding:11px 12px;border-radius:15px}
+.tn-text{font-size:14px}
+.tn-code{font-size:12px;padding:5px 10px}

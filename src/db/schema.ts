@@ -84,6 +84,8 @@ export const announcements = pgTable("announcements", {
 });
 export const auditLogs = pgTable("audit_logs", { id: uuid("id").defaultRandom().primaryKey(), actorId: uuid("actor_id").references(() => users.id), action: text("action").notNull(), target: text("target"), details: jsonb("details").$type<Record<string, unknown>>().notNull().default({}), eventHash: text("event_hash").unique(), createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull() });
 export const tickets = pgTable("support_tickets", { id: uuid("id").defaultRandom().primaryKey(), userId: uuid("user_id").notNull().references(() => users.id), subject: text("subject").notNull(), message: text("message").notNull(), status: text("status").notNull().default("open"), reply: text("reply"), createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull() });
+export const supportMessages = pgTable("support_messages", { id: uuid("id").defaultRandom().primaryKey(), userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }), sender: text("sender").notNull(), body: text("body").notNull(), createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(), readAt: timestamp("read_at", { withTimezone: true }) }, t => [index("support_msg_user_idx").on(t.userId, t.createdAt)]);
+export type SupportMessage = typeof supportMessages.$inferSelect;
 export const rateLimits = pgTable("rate_limits", { key: text("key").primaryKey(), count: integer("count").notNull().default(1), expiresAt: timestamp("expires_at", { withTimezone: true }).notNull() });
 export type Product = typeof products.$inferSelect;
 export type PublicProduct = Omit<Product, "fulfillment">;

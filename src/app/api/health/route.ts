@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { activations, announcements, auditLogs, inventoryItems, orders, paymentEvents, payments, products, rateLimits, sessions, settings, tickets, users, storeCategories, uploadedFiles } from "@/db/schema";
+import { activations, announcements, auditLogs, inventoryItems, orders, paymentEvents, payments, products, rateLimits, sessions, settings, supportMessages, tickets, users, storeCategories, uploadedFiles } from "@/db/schema";
 import { APP_ID, APP_RELEASE } from "@/lib/app-info";
 import { ensureSeed } from "@/lib/server";
 
@@ -25,6 +25,7 @@ export async function GET() {
       db.select().from(announcements).limit(0),
       db.select().from(auditLogs).limit(0),
       db.select().from(tickets).limit(0),
+      db.select().from(supportMessages).limit(0),
       db.select().from(rateLimits).limit(0),
       db.select().from(storeCategories).limit(0),
       db.select({id:uploadedFiles.id,status:uploadedFiles.status,kind:uploadedFiles.kind}).from(uploadedFiles).limit(0),
